@@ -17,6 +17,7 @@ import { CustomTagState } from "./stateTypes";
 import { DyadOutput } from "./DyadOutput";
 import { DyadProblemSummary } from "./DyadProblemSummary";
 import { IpcClient } from "@/ipc/ipc_client";
+import { DyadMcpCall } from "./DyadMcpCall";
 
 interface DyadMarkdownParserProps {
   content: string;
@@ -122,6 +123,7 @@ function preprocessUnclosedTags(content: string): {
     "dyad-chat-summary",
     "dyad-edit",
     "dyad-codebase-context",
+    // Intentionally exclude "dyad-mcp-call" here to avoid rendering a pending block during streaming.
     "think",
   ];
 
@@ -188,6 +190,7 @@ function parseCustomTags(content: string): ContentPiece[] {
     "dyad-chat-summary",
     "dyad-edit",
     "dyad-codebase-context",
+    "dyad-mcp-call",
     "think",
   ];
 
@@ -405,6 +408,29 @@ function renderCustomTag(
         >
           {content}
         </DyadOutput>
+      );
+
+    case "dyad-mcp-call":
+      // Dedicated MCP call/result block
+      const stateAttr = (attributes.state as CustomTagState) || undefined;
+      const state = stateAttr ?? getState({ isStreaming, inProgress });
+      const server = attributes.server || "";
+      const tool = attributes.tool || "";
+      const title = server && tool ? `${server}/${tool}` : tool || server;
+      // Render using a simple styled block; pretty content is shown inside
+      return (
+        <DyadMcpCall
+          node={{
+            properties: {
+              server,
+              tool,
+              title,
+              state,
+            },
+          }}
+        >
+          {content}
+        </DyadMcpCall>
       );
 
     case "dyad-problem-report":
