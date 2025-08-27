@@ -123,7 +123,8 @@ function preprocessUnclosedTags(content: string): {
     "dyad-chat-summary",
     "dyad-edit",
     "dyad-codebase-context",
-    // Intentionally exclude "dyad-mcp-call" here to avoid rendering a pending block during streaming.
+    // Include dyad-mcp-call so the block renders even if the stream ends without an explicit close tag.
+    "dyad-mcp-call",
     "think",
   ];
 
@@ -176,7 +177,13 @@ function preprocessUnclosedTags(content: string): {
  * Parse the content to extract custom tags and markdown sections into a unified array
  */
 function parseCustomTags(content: string): ContentPiece[] {
-  const { processedContent, inProgressTags } = preprocessUnclosedTags(content);
+  // Normalize common variants the model might emit (e.g., <mcp-call> or <-mcp-call>)
+  // into the canonical <dyad-mcp-call> form so our parser can render them.
+  const normalized = content
+    .replace(/<\s*-?mcp-call(\s|>)/g, (m, g1) => `<dyad-mcp-call${g1}`)
+    .replace(/<\s*\/\s*-?mcp-call\s*>/g, `</dyad-mcp-call>`);
+
+  const { processedContent, inProgressTags } = preprocessUnclosedTags(normalized);
 
   const customTagNames = [
     "dyad-write",
@@ -191,6 +198,8 @@ function parseCustomTags(content: string): ContentPiece[] {
     "dyad-edit",
     "dyad-codebase-context",
     "dyad-mcp-call",
+    // Accept legacy/variant tag name just in case (should be normalized already)
+    "mcp-call",
     "think",
   ];
 
@@ -411,6 +420,7 @@ function renderCustomTag(
       );
 
     case "dyad-mcp-call":
+    case "mcp-call":
       // Dedicated MCP call/result block
       const stateAttr = (attributes.state as CustomTagState) || undefined;
       const state = stateAttr ?? getState({ isStreaming, inProgress });

@@ -154,6 +154,37 @@ class McpManagerImpl {
     return servers.filter((s) => s.enabled !== false); // default enabled
   }
 
+  /** Return sanitized server info for prompts/UI without exposing secrets. */
+  listServersInfo(): Array<{
+    id: string;
+    name?: string;
+    transport: "stdio" | "http";
+    urlHost?: string;
+    headerKeys?: string[];
+    hasCommand?: boolean;
+  }> {
+    const servers = this.getServers();
+    return servers.map((s) => {
+      let urlHost: string | undefined;
+      if (s.transport === "http" && s.url) {
+        try {
+          urlHost = new URL(s.url).host;
+        } catch {
+          urlHost = undefined;
+        }
+      }
+      const headerKeys = s.headers ? Object.keys(s.headers) : undefined;
+      return {
+        id: s.id,
+        name: s.name,
+        transport: s.transport,
+        urlHost,
+        headerKeys,
+        hasCommand: !!s.command,
+      };
+    });
+  }
+
   private getServerById(id: string): McpServerConfig | undefined {
     return this.getServers().find((s) => s.id === id);
   }
