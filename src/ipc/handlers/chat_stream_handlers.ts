@@ -143,13 +143,13 @@ async function processStreamChunks({
     let chunk = "";
     const pAny: any = part as any;
     const typeStr: string | undefined = pAny?.type;
-    if (typeStr === "text-delta") {
-      if (inThinkingBlock) {
-        chunk = "</think>";
-        inThinkingBlock = false;
-      }
-      chunk += part.text;
-    } else if (typeStr === "reasoning-delta") {
+      if (typeStr === "text-delta") {
+        if (inThinkingBlock) {
+          chunk = "</think>";
+          inThinkingBlock = false;
+        }
+        chunk += pAny.text;
+      } else if (typeStr === "reasoning-delta") {
       if (!inThinkingBlock) {
         chunk = "<think>";
         inThinkingBlock = true;
@@ -639,7 +639,7 @@ ${componentSnippet}
             userTextLower.includes(id.toLowerCase()),
           );
 
-          systemPrompt += `\n\n# Available MCP Tools\nYou can autonomously call any of these MCP tools (via function calling). Tool function names follow mcp__{serverId}__{toolName}.\n\nDecision policy:\n- Decide when to call a tool versus answering directly. Call a tool when it can materially improve accuracy, fetch fresh data, or automate a concrete action.\n- Choose the server/tool whose description best matches the user's request. If unsure between multiple, ask a brief clarifying question before calling.\n- If the user mentions a server (e.g., \"context7\", \"omnisearch\"), prefer that server.\n- Do not announce \"I will search/call a tool\"; either call it or ask for missing info.\n\nInput & auth policy:\n- Before calling, check the tool's required inputs from its schema (above). If any are missing (e.g., URL, id, date range), ask the user for them first.\n- If an HTTP server returns auth errors (401/403 or messages like \"invalid api key\"), explain the issue and ask the user for the necessary key/token or header. Tell them to add it in Settings → Integrations → MCP for the specific server id. Example header: Authorization: Bearer {{TOKEN}}. Do not expose any secrets yourself.\n\nResponse policy after MCP calls:\n- After a tool call, write a clear explanation based on the results (not just a one-liner). In 2–5 sentences, answer the user's request using the returned data, and propose the next action or ask a targeted question. Include concrete details (titles, domains, ids, counts) when available.\n- Do not render Dyad tags; the app shows tool results automatically.\n\n${sections}`;
+          systemPrompt += `\n\n# Available MCP Tools\nYou can autonomously call any of these MCP tools (via function calling). Tool function names follow mcp__{serverId}__{toolName}.\n\nDecision policy:\n- Decide when to call a tool versus answering directly. Call a tool when it can materially improve accuracy, fetch fresh data, or automate a concrete action.\n- Choose the server/tool whose description best matches the user's request. If unsure between multiple, ask a brief clarifying question before calling.\n- If the user mentions a server (e.g., \"context7\", \"omnisearch\"), prefer that server.\n- Do not announce \"I will search/call a tool\"; either call it or ask for missing info.\n\nInput & auth policy:\n- Before calling, check the tool's required inputs from its schema (above). If any are missing (e.g., URL, id, date range), ask the user for them first.\n- If an HTTP server returns auth errors (401/403 or messages like \"invalid api key\"), explain the issue and ask the user for the necessary key/token or header. Tell them to add it in Settings → Integrations → MCP for the specific server id. Example header: Authorization: Bearer {{TOKEN}}. Do not expose any secrets yourself.\n\nResponse policy after MCP calls:\n- After a tool call, evaluate whether further action is needed. If so, use Dyad tags or additional MCP tools to continue the task (e.g., editing files). Otherwise, write a clear explanation in 2–5 sentences using the returned data and propose the next step or a targeted question. Include concrete details (titles, domains, ids, counts) when available.\n- The app shows tool results automatically, so avoid duplicating them verbatim.\n\n${sections}`;
 
           if (referencedServer) {
             systemPrompt += `\n\nServer focus: The user referenced server "${referencedServer}"—prefer tools from this server for this turn.`;
@@ -1011,7 +1011,7 @@ This conversation includes one or more image attachments. When the user uploads 
                 const toolsBlob = bodies.join("\n\n---\n\n");
 
                 const followupSystem =
-                  "Do not call tools. Using only the provided MCP result(s), write a helpful follow-up that addresses the user's request. Be specific and actionable: 2–5 sentences. If results include URLs or titles, reference a few. If the body indicates auth/permissions issues (401/403, invalid key, missing token), clearly ask the user for the needed key/token or link and instruct them to add it in Settings → Integrations → MCP for the correct server id. If results are empty, suggest a refined query or next step.";
+                  "Using the provided MCP result(s), continue addressing the user's request. If follow-up actions such as editing files are needed, output the appropriate Dyad tags. Be specific and actionable: 2–5 sentences. If results include URLs or titles, reference a few. If the body indicates auth/permissions issues (401/403, invalid key, missing token), clearly ask the user for the needed key/token or link and instruct them to add it in Settings → Integrations → MCP for the correct server id. If results are empty, suggest a refined query or next step.";
                 const followupUser = `User asked: ${req.prompt}\n\nMCP result(s):\n\n${toolsBlob}`;
 
                 const { fullStream: followStream } = await streamText({
