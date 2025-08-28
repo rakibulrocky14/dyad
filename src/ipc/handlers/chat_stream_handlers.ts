@@ -1010,8 +1010,10 @@ This conversation includes one or more image attachments. When the user uploads 
                 }
                 const toolsBlob = bodies.join("\n\n---\n\n");
 
-                const followUpSystem =
-                  `${systemPrompt}\n\nUsing the provided MCP result(s), continue addressing the user's request. If follow-up actions such as editing files are needed, output the appropriate Dyad tags. Be specific and actionable: 2–5 sentences. If results include URLs or titles, reference a few. If the body indicates auth/permissions issues (401/403, invalid key, missing token), clearly ask the user for the needed key/token or link and instruct them to add it in Settings → Integrations → MCP for the correct server id. If results are empty, suggest a refined query or next step.`;
+                const followUpSystem = [
+                  systemPrompt,
+                  "Using the provided MCP result(s), continue addressing the user's request. If follow-up actions such as editing files are needed, output the appropriate Dyad tags. Be specific and actionable: 2–5 sentences. If results include URLs or titles, reference a few. If the body indicates auth/permissions issues (401/403, invalid key, missing token), clearly ask the user for the needed key/token or link and instruct them to add it in Settings → Integrations → MCP for the correct server id. If results are empty, suggest a refined query or next step.",
+                ].join("\n\n");
                 const followUpUser = `User asked: ${req.prompt}\n\nMCP result(s):\n\n${toolsBlob}`;
 
                 const { fullStream: followUpStream } = await streamText({
