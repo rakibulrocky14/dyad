@@ -1010,11 +1010,13 @@ This conversation includes one or more image attachments. When the user uploads 
                 }
                 const toolsBlob = bodies.join("\n\n---\n\n");
 
-                const followupSystem =
-                  "Using the provided MCP result(s), continue addressing the user's request. If follow-up actions such as editing files are needed, output the appropriate Dyad tags. Be specific and actionable: 2–5 sentences. If results include URLs or titles, reference a few. If the body indicates auth/permissions issues (401/403, invalid key, missing token), clearly ask the user for the needed key/token or link and instruct them to add it in Settings → Integrations → MCP for the correct server id. If results are empty, suggest a refined query or next step.";
-                const followupUser = `User asked: ${req.prompt}\n\nMCP result(s):\n\n${toolsBlob}`;
+                const followUpSystem = [
+                  systemPrompt,
+                  `Using the provided MCP result(s), continue addressing the user's request. If follow-up actions such as editing files are needed, output the appropriate Dyad tags. Be specific and actionable: 2–5 sentences. If results include URLs or titles, reference a few. If the body indicates auth/permissions issues (401/403, invalid key, missing token), clearly ask the user for the needed key/token or link and instruct them to add it in Settings → Integrations → MCP for the correct server id. If results are empty, suggest a refined query or next step.`,
+                ].join("\n\n");
+                const followUpUser = `User asked: ${req.prompt}\n\nMCP result(s):\n\n${toolsBlob}`;
 
-                const { fullStream: followStream } = await streamText({
+                const { fullStream: followUpStream } = await streamText({
                   maxOutputTokens: 256,
                   temperature: 0.2,
                   maxRetries: 1,
@@ -1032,15 +1034,15 @@ This conversation includes one or more image attachments. When the user uploads 
                       reasoningSummary: "off",
                     } as OpenAIResponsesProviderOptions,
                   },
-                  system: followupSystem,
-                  messages: [{ role: "user", content: followupUser }],
+                  system: followUpSystem,
+                  messages: [{ role: "user", content: followUpUser }],
                   onError: (e) => {
                     logger.warn("follow-up summary generation failed", e);
                   },
                   abortSignal: abortController.signal,
                 });
 
-                for await (const part of followStream) {
+                for await (const part of followUpStream) {
                   if (abortController.signal.aborted) break;
                   if (part.type !== "text-delta") continue;
                   fullResponse += part.text;
