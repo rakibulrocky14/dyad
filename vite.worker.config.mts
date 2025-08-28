@@ -12,10 +12,15 @@ export default defineConfig({
     sourcemap: true,
     // target: "node16",
     lib: {
-      entry: path.resolve(__dirname, "workers/tsc/tsc_worker.ts"),
-      name: "tsc_worker",
-      fileName: "tsc_worker",
+      entry: {
+        tsc: path.resolve(__dirname, "workers/tsc/tsc_worker.ts"),
+        background: path.resolve(
+          __dirname,
+          "workers/background/task_worker.ts",
+        ),
+      },
       formats: ["cjs"],
+      fileName: (format, entryName) => `${entryName}.js`,
     },
     rollupOptions: {
       external: ["node:fs", "node:path", "node:worker_threads", "typescript"],

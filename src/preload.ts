@@ -106,6 +106,9 @@ const validInvokeChannels = [
   "restart-dyad",
   "get-templates",
   "portal:migrate-create",
+  // Background Tasks
+  "bg-tasks:get-all",
+  "bg-tasks:create",
   // MCP
   "mcp:test-server",
   // Help bot
@@ -133,6 +136,7 @@ const validReceiveChannels = [
   "github:flow-success",
   "github:flow-error",
   "deep-link-received",
+  "bg-task-updated",
   // Help bot
   "help:chat:response:chunk",
   "help:chat:response:end",

@@ -9,6 +9,8 @@ import { ChatInput } from "./chat/ChatInput";
 import { VersionPane } from "./chat/VersionPane";
 import { ChatError } from "./chat/ChatError";
 
+import { isBackgroundPanelOpenAtom } from "@/atoms/backgroundTaskAtoms";
+
 interface ChatPanelProps {
   chatId?: number;
   isPreviewOpen: boolean;
@@ -20,6 +22,9 @@ export function ChatPanel({
   isPreviewOpen,
   onTogglePreview,
 }: ChatPanelProps) {
+  const [isBackgroundPanelOpen, setIsBackgroundPanelOpen] = useAtom(
+    isBackgroundPanelOpenAtom,
+  );
   const [messages, setMessages] = useAtom(chatMessagesAtom);
   const [isVersionPaneOpen, setIsVersionPaneOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +126,10 @@ export function ChatPanel({
         isPreviewOpen={isPreviewOpen}
         onTogglePreview={onTogglePreview}
         onVersionClick={() => setIsVersionPaneOpen(!isVersionPaneOpen)}
+        isBackgroundPanelOpen={isBackgroundPanelOpen}
+        onToggleBackgroundPanel={() =>
+          setIsBackgroundPanelOpen(!isBackgroundPanelOpen)
+        }
       />
       <div className="flex flex-1 overflow-hidden">
         {!isVersionPaneOpen && (

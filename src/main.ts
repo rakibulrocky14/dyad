@@ -127,7 +127,7 @@ declare global {
   const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 }
 
-let mainWindow: BrowserWindow | null = null;
+export let mainWindow: BrowserWindow | null = null;
 
 const createWindow = () => {
   // Create the browser window.

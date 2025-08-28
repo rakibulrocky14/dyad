@@ -95,6 +95,7 @@ export const versions = sqliteTable(
 export const appsRelations = relations(apps, ({ many }) => ({
   chats: many(chats),
   versions: many(versions),
+  backgroundTasks: many(background_tasks),
 }));
 
 export const chatsRelations = relations(chats, ({ many, one }) => ({
@@ -104,6 +105,93 @@ export const chatsRelations = relations(chats, ({ many, one }) => ({
     references: [apps.id],
   }),
 }));
+
+export const background_tasks = sqliteTable("background_tasks", {
+  id: text("id").primaryKey(),
+  appId: integer("app_id")
+    .notNull()
+    .references(() => apps.id, { onDelete: "cascade" }),
+  type: text("type", {
+    enum: [
+      "code_generation",
+      "app_scaffolding",
+      "code_refactoring",
+      "testing_suite",
+      "build_optimization",
+      "deployment_prep",
+      "documentation",
+      "code_analysis",
+      "feature_enhancement",
+      "bug_fixing",
+      "full_stack_complete",
+    ],
+  }).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  priority: integer("priority").notNull().default(3),
+  status: text("status", {
+    enum: ["queued", "running", "paused", "completed", "failed", "cancelled"],
+  })
+    .notNull()
+    .default("queued"),
+  progress: integer("progress").notNull().default(0),
+  estimatedDuration: integer("estimated_duration"),
+  payload: text("payload", { mode: "json" }),
+  result: text("result", { mode: "json" }),
+  error: text("error"),
+  logs: text("logs", { mode: "json" }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  startedAt: integer("started_at", { mode: "timestamp" }),
+  completedAt: integer("completed_at", { mode: "timestamp" }),
+  aiModel: text("ai_model"),
+  projectPath: text("project_path"),
+  rules: text("rules"),
+});
+
+export const task_dependencies = sqliteTable(
+  "task_dependencies",
+  {
+    taskId: text("task_id")
+      .notNull()
+      .references(() => background_tasks.id, { onDelete: "cascade" }),
+    dependsOn: text("depends_on")
+      .notNull()
+      .references(() => background_tasks.id, { onDelete: "cascade" }),
+  },
+  (table) => ({
+    pk: unique().on(table.taskId, table.dependsOn),
+  }),
+);
+
+export const backgroundTasksRelations = relations(
+  background_tasks,
+  ({ one, many }) => ({
+    app: one(apps, {
+      fields: [background_tasks.appId],
+      references: [apps.id],
+    }),
+    dependencies: many(task_dependencies, { relationName: "dependencies" }),
+    dependents: many(task_dependencies, { relationName: "dependents" }),
+  }),
+);
+
+export const taskDependenciesRelations = relations(
+  task_dependencies,
+  ({ one }) => ({
+    task: one(background_tasks, {
+      fields: [task_dependencies.taskId],
+      references: [background_tasks.id],
+      relationName: "dependents",
+    }),
+    dependency: one(background_tasks, {
+      fields: [task_dependencies.dependsOn],
+      references: [background_tasks.id],
+      relationName: "dependencies",
+    }),
+  }),
+);
 
 export const messagesRelations = relations(messages, ({ one }) => ({
   chat: one(chats, {

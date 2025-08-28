@@ -13,11 +13,14 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { isPreviewOpenAtom } from "@/atoms/viewAtoms";
 import { useChats } from "@/hooks/useChats";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { BackgroundPanel } from "@/components/BackgroundPanel";
+import { isBackgroundPanelOpenAtom } from "@/atoms/backgroundTaskAtoms";
 
 export default function ChatPage() {
   let { id: chatId } = useSearch({ from: "/chat" });
   const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useAtom(isPreviewOpenAtom);
+  const [isBackgroundPanelOpen, setIsBackgroundPanelOpen] = useAtom(isBackgroundPanelOpenAtom);
   const [isResizing, setIsResizing] = useState(false);
   const selectedAppId = useAtomValue(selectedAppIdAtom);
   const setSelectedAppId = useSetAtom(selectedAppIdAtom);
@@ -59,6 +62,18 @@ export default function ChatPage() {
           />
         </div>
       </Panel>
+
+      {isBackgroundPanelOpen && (
+        <>
+          <PanelResizeHandle
+            onDragging={(e) => setIsResizing(e)}
+            className="w-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors cursor-col-resize"
+          />
+          <Panel id="background-panel" defaultSize={25} minSize={20}>
+            <BackgroundPanel />
+          </Panel>
+        </>
+      )}
 
       <>
         <PanelResizeHandle
