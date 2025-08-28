@@ -343,6 +343,9 @@ class McpManagerImpl {
       },
       body: JSON.stringify(body),
     });
+    if (!res.ok) {
+      throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
+    }
     const json = (await res.json()) as JsonRpcResponse<T>;
     if (json.error) throw new Error(json.error.message);
     return json.result as T;
