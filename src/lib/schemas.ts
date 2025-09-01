@@ -30,6 +30,7 @@ const providers = [
   "openai",
   "anthropic",
   "google",
+  "vertex",
   "auto",
   "openrouter",
   "ollama",
