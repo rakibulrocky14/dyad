@@ -161,6 +161,16 @@ export const MODEL_OPTIONS: Record<string, ModelOption[]> = {
       temperature: 0,
     },
   ],
+  vertexai: [
+    {
+      name: "gemini-1.5-pro-preview-0409",
+      displayName: "Gemini 1.5 Pro",
+      description: "Google's Gemini 1.5 Pro model on Vertex AI",
+      maxOutputTokens: 8192,
+      contextWindow: 1048576,
+      temperature: 0,
+    },
+  ],
   openrouter: [
     {
       name: "qwen/qwen3-coder",
@@ -281,6 +291,14 @@ export const CLOUD_PROVIDERS: Record<
     hasFreeTier: true,
     websiteUrl: "https://aistudio.google.com/app/apikey",
     gatewayPrefix: "gemini/",
+  },
+  vertexai: {
+    displayName: "Vertex AI",
+    hasFreeTier: false,
+    websiteUrl: "https://console.cloud.google.com/vertex-ai",
+    gatewayPrefix: "vertex-ai/",
+    // Note: Vertex AI uses Application Default Credentials (ADC) for authentication.
+    // See https://cloud.google.com/docs/authentication/provide-credentials-adc
   },
   openrouter: {
     displayName: "OpenRouter",
