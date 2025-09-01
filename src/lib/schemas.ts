@@ -58,6 +58,12 @@ export type LargeLanguageModel = z.infer<typeof LargeLanguageModelSchema>;
 /**
  * Zod schema for provider settings
  */
+export const VertexAiSettingsSchema = z.object({
+  projectId: z.string().optional(),
+  location: z.string().optional(),
+  serviceAccount: z.any().optional(),
+});
+
 export const ProviderSettingSchema = z.object({
   apiKey: SecretSchema.optional(),
 });
@@ -153,6 +159,7 @@ export const UserSettingsSchema = z.object({
   vercelAccessToken: SecretSchema.optional(),
   supabase: SupabaseSchema.optional(),
   neon: NeonSchema.optional(),
+  vertexai: VertexAiSettingsSchema.optional(),
   autoApproveChanges: z.boolean().optional(),
   telemetryConsent: z.enum(["opted_in", "opted_out", "unset"]).optional(),
   telemetryUserId: z.string().optional(),
