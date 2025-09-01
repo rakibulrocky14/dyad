@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI as createGoogle } from "@ai-sdk/google";
 import { createAnthropic } from "@ai-sdk/anthropic";
+import { createVertex } from "@ai-sdk/google-vertex";
 import { azure } from "@ai-sdk/azure";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
@@ -207,6 +208,16 @@ function getRegularModelClient(
     }
     case "google": {
       const provider = createGoogle({ apiKey });
+      return {
+        modelClient: {
+          model: provider(model.name),
+          builtinProviderId: providerId,
+        },
+        backupModelClients: [],
+      };
+    }
+    case "vertex": {
+      const provider = createVertex();
       return {
         modelClient: {
           model: provider(model.name),

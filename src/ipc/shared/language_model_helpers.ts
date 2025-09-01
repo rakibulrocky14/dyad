@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 
 export const PROVIDERS_THAT_SUPPORT_THINKING: (keyof typeof MODEL_OPTIONS)[] = [
   "google",
+  "vertex",
   "auto",
 ];
 
@@ -161,6 +162,24 @@ export const MODEL_OPTIONS: Record<string, ModelOption[]> = {
       temperature: 0,
     },
   ],
+  vertex: [
+    {
+      name: "gemini-1.5-pro-002",
+      displayName: "Gemini 1.5 Pro",
+      description: "Google's Gemini 1.5 Pro model via Vertex AI",
+      maxOutputTokens: 65_536 - 1,
+      contextWindow: 1_048_576,
+      temperature: 0,
+    },
+    {
+      name: "gemini-1.5-flash-002",
+      displayName: "Gemini 1.5 Flash",
+      description: "Google's Gemini 1.5 Flash model via Vertex AI",
+      maxOutputTokens: 65_536 - 1,
+      contextWindow: 1_048_576,
+      temperature: 0,
+    },
+  ],
   openrouter: [
     {
       name: "qwen/qwen3-coder",
@@ -281,6 +300,12 @@ export const CLOUD_PROVIDERS: Record<
     hasFreeTier: true,
     websiteUrl: "https://aistudio.google.com/app/apikey",
     gatewayPrefix: "gemini/",
+  },
+  vertex: {
+    displayName: "Google Vertex",
+    hasFreeTier: false,
+    websiteUrl: "https://cloud.google.com/vertex-ai",
+    gatewayPrefix: "vertex/",
   },
   openrouter: {
     displayName: "OpenRouter",
