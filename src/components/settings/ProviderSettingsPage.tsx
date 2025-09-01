@@ -16,6 +16,7 @@ import { UserSettings } from "@/lib/schemas";
 import { ProviderSettingsHeader } from "./ProviderSettingsHeader";
 import { ApiKeyConfiguration } from "./ApiKeyConfiguration";
 import { ModelsSection } from "./ModelsSection";
+import { VertexConfiguration } from "./VertexConfiguration";
 
 interface ProviderSettingsPageProps {
   provider: string;
@@ -75,8 +76,30 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
       ? !!(envVars["AZURE_API_KEY"] && envVars["AZURE_RESOURCE_NAME"])
       : false;
 
+  // Special handling for Vertex AI configuration (service account JSON + project/location)
+  const vertexSettings = settings?.providerSettings?.["vertexai"] as
+    | (UserSettings["providerSettings"][string] & {
+        projectId?: string;
+        location?: string;
+        serviceAccountJsonPath?: string;
+      })
+    | undefined;
+
+  const isVertexConfigured =
+    provider === "vertexai"
+      ? Boolean(
+          vertexSettings?.projectId &&
+            vertexSettings?.location &&
+            vertexSettings?.serviceAccountJsonPath,
+        )
+      : false;
+
   const isConfigured =
-    provider === "azure" ? isAzureConfigured : isValidUserKey || hasEnvKey; // Configured if either is set
+    provider === "azure"
+      ? isAzureConfigured
+      : provider === "vertexai"
+        ? isVertexConfigured
+        : isValidUserKey || hasEnvKey; // Configured if either is set
 
   // --- Save Handler ---
   const handleSaveKey = async () => {
@@ -254,6 +277,8 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
               Could not load configuration data: {settingsError.message}
             </AlertDescription>
           </Alert>
+        ) : provider === "vertexai" ? (
+          <VertexConfiguration settings={settings} />
         ) : (
           <ApiKeyConfiguration
             provider={provider}

@@ -217,7 +217,40 @@ function getRegularModelClient(
       };
     }
     case "vertexai": {
-      const provider = createVertex();
+      const vertexSettings = settings.providerSettings?.vertexai as
+        | (UserSettings["providerSettings"][string] & {
+            projectId?: string;
+            location?: string;
+            serviceAccountJsonPath?: string;
+          })
+        | undefined;
+
+      const project =
+        vertexSettings?.projectId || process.env.GOOGLE_CLOUD_PROJECT;
+      const location =
+        vertexSettings?.location || process.env.GOOGLE_CLOUD_LOCATION;
+      const credentialsPath =
+        vertexSettings?.serviceAccountJsonPath ||
+        process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+      if (!project || !location) {
+        throw new Error(
+          "Vertex AI requires projectId and location. Please configure them in Settings.",
+        );
+      }
+      if (!credentialsPath) {
+        throw new Error(
+          "Vertex AI requires a service account JSON. Please select the JSON in Settings.",
+        );
+      }
+
+      // The @ai-sdk/google-vertex package respects GOOGLE_APPLICATION_CREDENTIALS
+      // Set it for this process if provided via settings
+      if (!process.env.GOOGLE_APPLICATION_CREDENTIALS && credentialsPath) {
+        process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
+      }
+
+      const provider = createVertex({ project, location });
       return {
         modelClient: {
           model: provider(model.name),

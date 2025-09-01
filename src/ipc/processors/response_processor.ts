@@ -6,6 +6,7 @@ import { getDyadAppPath } from "../../paths/paths";
 import path from "node:path";
 import git from "isomorphic-git";
 import { safeJoin } from "../utils/path_utils";
+import { normalizePath } from "../../../shared/normalizePath";
 
 import log from "electron-log";
 import { executeAddDependency } from "./executeAddDependency";
@@ -213,9 +214,9 @@ export async function processFullResponseActions(
       // Delete the file if it exists
       if (fs.existsSync(fullFilePath)) {
         if (fs.lstatSync(fullFilePath).isDirectory()) {
-          fs.rmdirSync(fullFilePath, { recursive: true });
+          fs.rmdirSync(normalizePath(fullFilePath), { recursive: true });
         } else {
-          fs.unlinkSync(fullFilePath);
+          fs.unlinkSync(normalizePath(fullFilePath));
         }
         logger.log(`Successfully deleted file: ${fullFilePath}`);
         deletedFiles.push(filePath);
@@ -255,12 +256,12 @@ export async function processFullResponseActions(
       const toPath = safeJoin(appPath, tag.to);
 
       // Ensure target directory exists
-      const dirPath = path.dirname(toPath);
+      const dirPath = normalizePath(path.dirname(toPath));
       fs.mkdirSync(dirPath, { recursive: true });
 
       // Rename the file
       if (fs.existsSync(fromPath)) {
-        fs.renameSync(fromPath, toPath);
+        fs.renameSync(normalizePath(fromPath), normalizePath(toPath));
         logger.log(`Successfully renamed file: ${fromPath} -> ${toPath}`);
         renamedFiles.push(tag.to);
 
@@ -342,12 +343,12 @@ export async function processFullResponseActions(
         }
       }
 
-      // Ensure directory exists
-      const dirPath = path.dirname(fullFilePath);
+      // Ensure directory exists (normalize to POSIX for consistent tests)
+      const dirPath = normalizePath(path.dirname(fullFilePath));
       fs.mkdirSync(dirPath, { recursive: true });
 
-      // Write file content
-      fs.writeFileSync(fullFilePath, content);
+      // Write file content (normalize to POSIX for consistent tests)
+      fs.writeFileSync(normalizePath(fullFilePath), content);
       logger.log(`Successfully wrote file: ${fullFilePath}`);
       writtenFiles.push(filePath);
       if (isServerFunction(filePath) && typeof content === "string") {

@@ -30,6 +30,7 @@ const providers = [
   "openai",
   "anthropic",
   "google",
+  "vertexai",
   "auto",
   "openrouter",
   "ollama",
@@ -60,6 +61,10 @@ export type LargeLanguageModel = z.infer<typeof LargeLanguageModelSchema>;
  */
 export const ProviderSettingSchema = z.object({
   apiKey: SecretSchema.optional(),
+  // Vertex AI specific optional fields
+  projectId: z.string().optional(),
+  location: z.string().optional(),
+  serviceAccountJsonPath: z.string().optional(),
 });
 
 /**

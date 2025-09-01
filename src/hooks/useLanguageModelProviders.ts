@@ -20,6 +20,20 @@ export function useLanguageModelProviders() {
     if (queryResult.isLoading) {
       return false;
     }
+    if (provider === "vertexai") {
+      const projectId = (providerSettings as any)?.projectId as
+        | string
+        | undefined;
+      const location = (providerSettings as any)?.location as
+        | string
+        | undefined;
+      const jsonPath = (providerSettings as any)?.serviceAccountJsonPath as
+        | string
+        | undefined;
+      if (projectId && location && jsonPath) {
+        return true;
+      }
+    }
     if (providerSettings?.apiKey?.value) {
       return true;
     }

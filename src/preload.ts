@@ -106,6 +106,8 @@ const validInvokeChannels = [
   "restart-dyad",
   "get-templates",
   "portal:migrate-create",
+  // Vertex AI helpers
+  "vertex:select-service-account-json",
   // Help bot
   "help:chat:start",
   "help:chat:cancel",

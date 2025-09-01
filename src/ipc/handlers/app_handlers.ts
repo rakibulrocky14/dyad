@@ -1,4 +1,4 @@
-import { ipcMain, app } from "electron";
+import { ipcMain, app, dialog } from "electron";
 import { db, getDatabasePath } from "../../db";
 import { apps, chats } from "../../db/schema";
 import { desc, eq } from "drizzle-orm";
@@ -1259,6 +1259,19 @@ export function registerAppHandlers() {
     const packageJsonPath = path.resolve(__dirname, "..", "..", "package.json");
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
     return { version: packageJson.version };
+  });
+
+  // Vertex AI: select service account JSON
+  ipcMain.handle("vertex:select-service-account-json", async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ["openFile"],
+      filters: [{ name: "JSON", extensions: ["json"] }],
+      title: "Select Google Service Account JSON",
+    });
+    if (result.canceled || result.filePaths.length === 0) {
+      return { path: null };
+    }
+    return { path: result.filePaths[0] };
   });
 
   handle("rename-branch", async (_, params: RenameBranchParams) => {
