@@ -30,6 +30,7 @@ const providers = [
   "openai",
   "anthropic",
   "google",
+  "vertex",
   "auto",
   "openrouter",
   "ollama",
@@ -59,7 +60,17 @@ export type LargeLanguageModel = z.infer<typeof LargeLanguageModelSchema>;
  * Zod schema for provider settings
  */
 export const ProviderSettingSchema = z.object({
+  // Generic API key (used by most providers except Vertex/Azure)
   apiKey: SecretSchema.optional(),
+
+  // Vertex AI specific optional settings
+  // We add these as optional to avoid creating a provider-specific schema tree.
+  projectId: z.string().optional(),
+  location: z.string().optional(),
+  // Service account JSON key stored as a Secret (encrypted like apiKey)
+  serviceAccountKey: SecretSchema.optional(),
+  // Per-model toggle for Gemini 2.5 Flash thinking (Vertex only)
+  enableFlashThinking: z.boolean().optional(),
 });
 
 /**

@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 
 export const PROVIDERS_THAT_SUPPORT_THINKING: (keyof typeof MODEL_OPTIONS)[] = [
   "google",
+  "vertex",
   "auto",
 ];
 
@@ -161,6 +162,35 @@ export const MODEL_OPTIONS: Record<string, ModelOption[]> = {
       temperature: 0,
     },
   ],
+  vertex: [
+    // Vertex Gemini 2.5 Pro
+    {
+      name: "gemini-2.5-pro",
+      displayName: "Gemini 2.5 Pro",
+      description: "Vertex Gemini 2.5 Pro",
+      maxOutputTokens: 65_536 - 1,
+      contextWindow: 1_048_576,
+      temperature: 0,
+    },
+    // Vertex Gemini 2.5 Flash
+    {
+      name: "gemini-2.5-flash",
+      displayName: "Gemini 2.5 Flash",
+      description: "Vertex Gemini 2.5 Flash",
+      maxOutputTokens: 65_536 - 1,
+      contextWindow: 1_048_576,
+      temperature: 0,
+    },
+    // Vertex Gemini 2.5 Flash Lite
+    {
+      name: "gemini-2.5-flash-lite",
+      displayName: "Gemini 2.5 Flash Lite",
+      description: "Vertex Gemini 2.5 Flash Lite",
+      maxOutputTokens: 8_192,
+      contextWindow: 1_048_576,
+      temperature: 0,
+    },
+  ],
   openrouter: [
     {
       name: "qwen/qwen3-coder",
@@ -280,6 +310,13 @@ export const CLOUD_PROVIDERS: Record<
     displayName: "Google",
     hasFreeTier: true,
     websiteUrl: "https://aistudio.google.com/app/apikey",
+    gatewayPrefix: "gemini/",
+  },
+  vertex: {
+    displayName: "Google Vertex AI",
+    hasFreeTier: false,
+    websiteUrl: "https://console.cloud.google.com/vertex-ai",
+    // Use the same gateway prefix as Google Gemini for Dyad Pro compatibility.
     gatewayPrefix: "gemini/",
   },
   openrouter: {
