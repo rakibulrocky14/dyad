@@ -6,7 +6,6 @@ import { getDyadAppPath } from "../../paths/paths";
 import path from "node:path";
 import git from "isomorphic-git";
 import { safeJoin } from "../utils/path_utils";
-import { toPosixPath } from "../utils/path_utils";
 
 import log from "electron-log";
 import { executeAddDependency } from "./executeAddDependency";
@@ -214,9 +213,9 @@ export async function processFullResponseActions(
       // Delete the file if it exists
       if (fs.existsSync(fullFilePath)) {
         if (fs.lstatSync(fullFilePath).isDirectory()) {
-          fs.rmSync(toPosixPath(fullFilePath), { recursive: true, force: true });
+          fs.rmdirSync(fullFilePath, { recursive: true });
         } else {
-          fs.unlinkSync(toPosixPath(fullFilePath));
+          fs.unlinkSync(fullFilePath);
         }
         logger.log(`Successfully deleted file: ${fullFilePath}`);
         deletedFiles.push(filePath);
@@ -257,11 +256,11 @@ export async function processFullResponseActions(
 
       // Ensure target directory exists
       const dirPath = path.dirname(toPath);
-      fs.mkdirSync(toPosixPath(dirPath), { recursive: true });
+      fs.mkdirSync(dirPath, { recursive: true });
 
       // Rename the file
       if (fs.existsSync(fromPath)) {
-        fs.renameSync(toPosixPath(fromPath), toPosixPath(toPath));
+        fs.renameSync(fromPath, toPath);
         logger.log(`Successfully renamed file: ${fromPath} -> ${toPath}`);
         renamedFiles.push(tag.to);
 
@@ -345,10 +344,10 @@ export async function processFullResponseActions(
 
       // Ensure directory exists
       const dirPath = path.dirname(fullFilePath);
-      fs.mkdirSync(toPosixPath(dirPath), { recursive: true });
+      fs.mkdirSync(dirPath, { recursive: true });
 
       // Write file content
-      fs.writeFileSync(toPosixPath(fullFilePath), content);
+      fs.writeFileSync(fullFilePath, content);
       logger.log(`Successfully wrote file: ${fullFilePath}`);
       writtenFiles.push(filePath);
       if (isServerFunction(filePath) && typeof content === "string") {

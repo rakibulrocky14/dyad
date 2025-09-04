@@ -64,6 +64,4 @@ export function safeJoin(basePath: string, ...paths: string[]): string {
  * you need consistent path strings across platforms. Node's fs APIs accept
  * forward slashes on Windows, so this is safe to use for file operations.
  */
-export function toPosixPath(p: string): string {
-  return p.replace(/\\/g, "/");
-}
+// Note: use existing helpers like shared/normalizePath if needed in callers.

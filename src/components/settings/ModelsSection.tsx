@@ -8,7 +8,6 @@ import { EditCustomModelDialog } from "@/components/EditCustomModelDialog";
 import { useLanguageModelsForProvider } from "@/hooks/useLanguageModelsForProvider"; // Use the hook directly here
 import { useDeleteCustomModel } from "@/hooks/useDeleteCustomModel"; // Import the new hook
 import { useSettings } from "@/hooks/useSettings";
-import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,22 +51,7 @@ export function ModelsSection({ providerId }: ModelsSectionProps) {
     },
   });
 
-  const { settings, updateSettings } = useSettings();
-  const vertexFlashThinkingEnabled = Boolean(
-    settings?.providerSettings?.vertex?.enableFlashThinking,
-  );
-
-  const toggleVertexFlashThinking = async (enabled: boolean) => {
-    await updateSettings({
-      providerSettings: {
-        ...settings?.providerSettings,
-        vertex: {
-          ...settings?.providerSettings?.vertex,
-          enableFlashThinking: enabled,
-        },
-      },
-    });
-  };
+  const { settings } = useSettings();
 
   const handleDeleteClick = (modelApiName: string) => {
     setModelToDelete(modelApiName);
@@ -207,21 +191,7 @@ export function ModelsSection({ providerId }: ModelsSectionProps) {
                 )}
               </div>
 
-              {/* Vertex-specific thinking toggle for Gemini 2.5 Flash */}
-              {providerId === "vertex" && model.apiName === "gemini-2.5-flash" && (
-                <div className="mt-3 flex items-center justify-between rounded-md border p-3 bg-(--background-lightest)">
-                  <div>
-                    <div className="text-sm font-medium">Enable Thinking</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Toggle Gemini 2.5 Flash reasoning mode.
-                    </div>
-                  </div>
-                  <Switch
-                    checked={vertexFlashThinkingEnabled}
-                    onCheckedChange={toggleVertexFlashThinking}
-                  />
-                </div>
-              )}
+              {/* Vertex-specific thinking toggle removed per review */}
             </div>
           ))}
         </div>

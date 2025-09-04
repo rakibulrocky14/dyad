@@ -46,7 +46,7 @@ export function VertexConfiguration() {
           ...settings?.providerSettings,
           vertex: {
             ...existing,
-            projectId: projectId || undefined,
+            projectId: projectId.trim() || undefined,
             location: location || undefined,
             serviceAccountKey: serviceAccountKey
               ? { value: serviceAccountKey }
@@ -64,8 +64,8 @@ export function VertexConfiguration() {
   };
 
   const isConfigured = Boolean(
-    (projectId && location && serviceAccountKey) ||
-      existing.serviceAccountKey?.value,
+    (projectId.trim() && location && serviceAccountKey) ||
+      (existing.projectId && existing.location && existing.serviceAccountKey?.value),
   );
 
   return (

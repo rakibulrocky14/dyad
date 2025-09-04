@@ -667,26 +667,6 @@ This conversation includes one or more image attachments. When the user uploads 
           } else {
             logger.log("sending AI request");
           }
-          // Determine thinking behavior for Google/Vertex providers
-          const selectedProviderId = modelClient.builtinProviderId;
-          const selectedModelName = settings.selectedModel.name;
-          let includeGoogleThoughts: boolean | undefined = undefined;
-          if (selectedProviderId === "google") {
-            // Keep existing behavior for Google provider
-            includeGoogleThoughts = true;
-          } else if (selectedProviderId === "vertex") {
-            if (selectedModelName === "gemini-2.5-pro") {
-              includeGoogleThoughts = true; // Always thinking for Pro
-            } else if (selectedModelName === "gemini-2.5-flash") {
-              // Toggle for Vertex Flash
-              includeGoogleThoughts = Boolean(
-                settings.providerSettings?.vertex?.enableFlashThinking,
-              );
-            } else {
-              includeGoogleThoughts = false; // Flash Lite or others
-            }
-          }
-
           return streamText({
             maxOutputTokens: await getMaxTokens(settings.selectedModel),
             temperature: await getTemperature(settings.selectedModel),
@@ -700,13 +680,11 @@ This conversation includes one or more image attachments. When the user uploads 
                 modelClient.builtinProviderId,
                 settings,
               ),
-              ...(includeGoogleThoughts !== undefined
-                ? {
-                    google: (includeGoogleThoughts
-                      ? { thinkingConfig: { includeThoughts: true } }
-                      : {}) as GoogleGenerativeAIProviderOptions,
-                  }
-                : {}),
+              google: {
+                thinkingConfig: {
+                  includeThoughts: true,
+                },
+              } satisfies GoogleGenerativeAIProviderOptions,
               openai: {
                 reasoningSummary: "auto",
               } satisfies OpenAIResponsesProviderOptions,

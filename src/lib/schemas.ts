@@ -58,25 +58,34 @@ export type LargeLanguageModel = z.infer<typeof LargeLanguageModelSchema>;
 
 /**
  * Zod schema for provider settings
+ * Regular providers use only apiKey. Vertex has additional optional fields.
  */
-export const ProviderSettingSchema = z.object({
-  // Generic API key (used by most providers except Vertex/Azure)
+export const RegularProviderSettingSchema = z.object({
   apiKey: SecretSchema.optional(),
+});
 
-  // Vertex AI specific optional settings
-  // We add these as optional to avoid creating a provider-specific schema tree.
+export const VertexProviderSettingSchema = z.object({
+  apiKey: SecretSchema.optional(),
   projectId: z.string().optional(),
   location: z.string().optional(),
-  // Service account JSON key stored as a Secret (encrypted like apiKey)
   serviceAccountKey: SecretSchema.optional(),
-  // Per-model toggle for Gemini 2.5 Flash thinking (Vertex only)
-  enableFlashThinking: z.boolean().optional(),
 });
+
+export const ProviderSettingSchema = z.union([
+  RegularProviderSettingSchema,
+  VertexProviderSettingSchema,
+]);
 
 /**
  * Type derived from the ProviderSettingSchema
  */
 export type ProviderSetting = z.infer<typeof ProviderSettingSchema>;
+export type RegularProviderSetting = z.infer<
+  typeof RegularProviderSettingSchema
+>;
+export type VertexProviderSetting = z.infer<
+  typeof VertexProviderSettingSchema
+>;
 
 export const RuntimeModeSchema = z.enum(["web-sandbox", "local-node", "unset"]);
 export type RuntimeMode = z.infer<typeof RuntimeModeSchema>;
