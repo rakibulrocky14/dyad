@@ -60,16 +60,20 @@ export type LargeLanguageModel = z.infer<typeof LargeLanguageModelSchema>;
  * Zod schema for provider settings
  * Regular providers use only apiKey. Vertex has additional optional fields.
  */
-export const RegularProviderSettingSchema = z.object({
-  apiKey: SecretSchema.optional(),
-});
+export const RegularProviderSettingSchema = z
+  .object({
+    apiKey: SecretSchema.optional(),
+  })
+  .passthrough();
 
-export const VertexProviderSettingSchema = z.object({
-  apiKey: SecretSchema.optional(),
-  projectId: z.string().optional(),
-  location: z.string().optional(),
-  serviceAccountKey: SecretSchema.optional(),
-});
+export const VertexProviderSettingSchema = z
+  .object({
+    apiKey: SecretSchema.optional(),
+    projectId: z.string().optional(),
+    location: z.string().optional(),
+    serviceAccountKey: SecretSchema.optional(),
+  })
+  .passthrough();
 
 export const ProviderSettingSchema = z.union([
   RegularProviderSettingSchema,

@@ -86,6 +86,11 @@ export function VertexConfiguration() {
             onChange={(e) => setLocation(e.target.value)}
             placeholder="us-central1"
           />
+          <p className="mt-1 text-xs text-muted-foreground">
+            If you see a "model not found" error, try a different region. Some
+            partner models (MaaS) are only available in specific locations
+            (e.g., us-central1, us-west2).
+          </p>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">
