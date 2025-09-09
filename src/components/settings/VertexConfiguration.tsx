@@ -5,11 +5,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, CheckCircle2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
-import type { UserSettings } from "@/lib/schemas";
+import type { UserSettings, VertexProviderSetting } from "@/lib/schemas";
 
 export function VertexConfiguration() {
   const { settings, updateSettings } = useSettings();
-  const existing = settings?.providerSettings?.vertex ?? {};
+  const existing =
+    (settings?.providerSettings?.vertex as VertexProviderSetting) ?? {};
 
   const [projectId, setProjectId] = useState(existing.projectId || "");
   const [location, setLocation] = useState(existing.location || "");
@@ -65,7 +66,9 @@ export function VertexConfiguration() {
 
   const isConfigured = Boolean(
     (projectId.trim() && location && serviceAccountKey) ||
-      (existing.projectId && existing.location && existing.serviceAccountKey?.value),
+      (existing.projectId &&
+        existing.location &&
+        existing.serviceAccountKey?.value),
   );
 
   return (
@@ -136,4 +139,3 @@ export function VertexConfiguration() {
     </div>
   );
 }
-

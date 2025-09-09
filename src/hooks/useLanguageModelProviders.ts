@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { IpcClient } from "@/ipc/ipc_client";
 import type { LanguageModelProvider } from "@/ipc/ipc_types";
 import { useSettings } from "./useSettings";
-import { cloudProviders } from "@/lib/schemas";
+import { cloudProviders, VertexProviderSetting } from "@/lib/schemas";
 
 export function useLanguageModelProviders() {
   const ipcClient = IpcClient.getInstance();
@@ -22,10 +22,11 @@ export function useLanguageModelProviders() {
     }
     // Vertex uses service account credentials instead of an API key
     if (provider === "vertex") {
+      const vertexSettings = providerSettings as VertexProviderSetting;
       if (
-        providerSettings?.serviceAccountKey?.value &&
-        providerSettings?.projectId &&
-        providerSettings?.location
+        vertexSettings?.serviceAccountKey?.value &&
+        vertexSettings?.projectId &&
+        vertexSettings?.location
       ) {
         return true;
       }

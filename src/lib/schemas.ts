@@ -68,7 +68,8 @@ export const RegularProviderSettingSchema = z
 
 export const VertexProviderSettingSchema = z
   .object({
-    apiKey: SecretSchema.optional(),
+    // We make this undefined so that it makes existing callsites easier.
+    apiKey: z.undefined(),
     projectId: z.string().optional(),
     location: z.string().optional(),
     serviceAccountKey: SecretSchema.optional(),
@@ -87,9 +88,7 @@ export type ProviderSetting = z.infer<typeof ProviderSettingSchema>;
 export type RegularProviderSetting = z.infer<
   typeof RegularProviderSettingSchema
 >;
-export type VertexProviderSetting = z.infer<
-  typeof VertexProviderSettingSchema
->;
+export type VertexProviderSetting = z.infer<typeof VertexProviderSettingSchema>;
 
 export const RuntimeModeSchema = z.enum(["web-sandbox", "local-node", "unset"]);
 export type RuntimeMode = z.infer<typeof RuntimeModeSchema>;

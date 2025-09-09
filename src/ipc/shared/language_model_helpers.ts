@@ -164,15 +164,6 @@ export const MODEL_OPTIONS: Record<string, ModelOption[]> = {
       contextWindow: 1_048_576,
       temperature: 0,
     },
-    // Vertex Gemini 2.5 Flash Lite
-    {
-      name: "gemini-2.5-flash-lite",
-      displayName: "Gemini 2.5 Flash Lite",
-      description: "Vertex Gemini 2.5 Flash Lite",
-      maxOutputTokens: 8_192,
-      contextWindow: 1_048_576,
-      temperature: 0,
-    },
   ],
   openrouter: [
     {
@@ -306,6 +297,7 @@ export const CLOUD_PROVIDERS: Record<
     websiteUrl: "https://console.cloud.google.com/vertex-ai",
     // Use the same gateway prefix as Google Gemini for Dyad Pro compatibility.
     gatewayPrefix: "gemini/",
+    secondary: true,
   },
   openrouter: {
     displayName: "OpenRouter",

@@ -676,13 +676,10 @@ This conversation includes one or more image attachments. When the user uploads 
               modelClient.builtinProviderId,
               settings,
             ),
+            openai: {
+              reasoningSummary: "auto",
+            } satisfies OpenAIResponsesProviderOptions,
           };
-
-          // Always include OpenAI-specific options
-          const openaiProviderOptions = {
-            reasoningSummary: "auto",
-          } satisfies OpenAIResponsesProviderOptions;
-          providerOptions.openai = openaiProviderOptions;
 
           // Conditionally include Google thinking config only for supported models
           const selectedModelName = settings.selectedModel.name || "";
@@ -706,7 +703,6 @@ This conversation includes one or more image attachments. When the user uploads 
           if (isVertex && isGeminiModel && !isFlashLite && !isPartnerModel) {
             providerOptions.google = {
               thinkingConfig: {
-                type: "enabled",
                 includeThoughts: true,
               },
             } satisfies GoogleGenerativeAIProviderOptions;

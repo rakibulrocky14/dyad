@@ -1,7 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { getUserDataPath } from "../paths/paths";
-import { UserSettingsSchema, type UserSettings, Secret } from "../lib/schemas";
+import {
+  UserSettingsSchema,
+  type UserSettings,
+  Secret,
+  VertexProviderSetting,
+} from "../lib/schemas";
 import { safeStorage } from "electron";
 import { v4 as uuidv4 } from "uuid";
 import log from "electron-log";
@@ -115,7 +120,9 @@ export function readSettings(): UserSettings {
         };
       }
       // Decrypt Vertex service account key if present
-      const v = combinedSettings.providerSettings[provider] as any;
+      const v = combinedSettings.providerSettings[
+        provider
+      ] as VertexProviderSetting;
       if (provider === "vertex" && v?.serviceAccountKey) {
         const encryptionType = v.serviceAccountKey.encryptionType;
         v.serviceAccountKey = {
@@ -181,7 +188,7 @@ export function writeSettings(settings: Partial<UserSettings>): void {
         );
       }
       // Encrypt Vertex service account key if present
-      const v = newSettings.providerSettings[provider] as any;
+      const v = newSettings.providerSettings[provider] as VertexProviderSetting;
       if (provider === "vertex" && v?.serviceAccountKey) {
         v.serviceAccountKey = encrypt(v.serviceAccountKey.value);
       }
