@@ -5,7 +5,11 @@ import { createVertex as createGoogleVertex } from "@ai-sdk/google-vertex";
 import { azure } from "@ai-sdk/azure";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import type { LargeLanguageModel, UserSettings } from "../../lib/schemas";
+import type {
+  LargeLanguageModel,
+  UserSettings,
+  VertexProviderSetting,
+} from "../../lib/schemas";
 import { getEnvVar } from "./read_env";
 import log from "electron-log";
 import { getLanguageModelProviders } from "../shared/language_model_helpers";
@@ -218,12 +222,12 @@ function getRegularModelClient(
     }
     case "vertex": {
       // Vertex uses Google service account credentials with project/location
-      const vertexSettings = settings.providerSettings?.[model.provider] as any;
+      const vertexSettings = settings.providerSettings?.[
+        model.provider
+      ] as VertexProviderSetting;
       const project = vertexSettings?.projectId;
       const location = vertexSettings?.location;
-      const serviceAccountKey = vertexSettings?.serviceAccountKey?.value as
-        | string
-        | undefined;
+      const serviceAccountKey = vertexSettings?.serviceAccountKey?.value;
 
       // Use a baseURL that does NOT pin to publishers/google so that
       // full publisher model IDs (e.g. publishers/deepseek-ai/models/...) work.
