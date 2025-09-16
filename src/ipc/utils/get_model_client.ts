@@ -334,9 +334,15 @@ function getRegularModelClient(
         };
       }
 
-      const azureSettings = settings.providerSettings?.azure as AzureProviderSetting | undefined;
-      const azureApiKeyFromSettings = (azureSettings?.apiKey?.value ?? "").trim();
-      const azureResourceNameFromSettings = (azureSettings?.resourceName ?? "").trim();
+      const azureSettings = settings.providerSettings?.azure as
+        | AzureProviderSetting
+        | undefined;
+      const azureApiKeyFromSettings = (
+        azureSettings?.apiKey?.value ?? ""
+      ).trim();
+      const azureResourceNameFromSettings = (
+        azureSettings?.resourceName ?? ""
+      ).trim();
       const envResourceName = (getEnvVar("AZURE_RESOURCE_NAME") ?? "").trim();
       const envAzureApiKey = (getEnvVar("AZURE_API_KEY") ?? "").trim();
 
@@ -433,5 +439,3 @@ function getRegularModelClient(
     }
   }
 }
-
-

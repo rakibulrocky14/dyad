@@ -11,7 +11,11 @@ import {} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { showError } from "@/lib/toast";
-import { UserSettings, AzureProviderSetting, VertexProviderSetting } from "@/lib/schemas";
+import {
+  UserSettings,
+  AzureProviderSetting,
+  VertexProviderSetting,
+} from "@/lib/schemas";
 
 import { ProviderSettingsHeader } from "./ProviderSettingsHeader";
 import { ApiKeyConfiguration } from "./ApiKeyConfiguration";
@@ -323,7 +327,3 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
     </div>
   );
 }
-
-
-
-

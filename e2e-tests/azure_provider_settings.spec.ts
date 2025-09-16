@@ -18,14 +18,18 @@ testWithPo("Azure provider settings UI", async ({ po }) => {
   });
 
   // Confirm the new configuration form is rendered
-  await expect(po.page.getByText("Azure OpenAI Configuration Required")).toBeVisible();
+  await expect(
+    po.page.getByText("Azure OpenAI Configuration Required"),
+  ).toBeVisible();
   await expect(po.page.getByLabel("Resource Name")).toBeVisible();
   await expect(po.page.getByLabel("API Key")).toBeVisible();
-  await expect(po.page.getByRole("button", { name: "Save Settings" })).toBeVisible();
+  await expect(
+    po.page.getByRole("button", { name: "Save Settings" }),
+  ).toBeVisible();
 
   // Environment variable helper section should still be available
   await expect(
-    po.page.getByText("Environment Variables (optional)")
+    po.page.getByText("Environment Variables (optional)"),
   ).toBeVisible();
   await expect(po.page.getByText("AZURE_API_KEY")).toBeVisible();
   await expect(po.page.getByText("AZURE_RESOURCE_NAME")).toBeVisible();
@@ -35,17 +39,19 @@ testWithPo("Azure provider settings UI", async ({ po }) => {
     po.page
       .locator("div")
       .filter({ hasText: "AZURE_API_KEY" })
-      .getByText("Not Set")
+      .getByText("Not Set"),
   ).toBeVisible();
   await expect(
     po.page
       .locator("div")
       .filter({ hasText: "AZURE_RESOURCE_NAME" })
-      .getByText("Not Set")
+      .getByText("Not Set"),
   ).toBeVisible();
 
   // The guidance text should explain precedence between saved settings and environment variables
   await expect(
-    po.page.getByText("Values saved in Settings take precedence over environment variables.")
+    po.page.getByText(
+      "Values saved in Settings take precedence over environment variables.",
+    ),
   ).toBeVisible();
 });

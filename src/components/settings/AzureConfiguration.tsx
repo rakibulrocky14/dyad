@@ -26,7 +26,8 @@ export function AzureConfiguration({
   updateSettings,
 }: AzureConfigurationProps) {
   const existing =
-    (settings?.providerSettings?.azure as AzureProviderSetting | undefined) ?? {};
+    (settings?.providerSettings?.azure as AzureProviderSetting | undefined) ??
+    {};
   const existingApiKey = existing.apiKey?.value ?? "";
   const existingResourceName = existing.resourceName ?? "";
 
@@ -138,7 +139,9 @@ export function AzureConfiguration({
     <div className="space-y-4">
       <Alert variant={status.variant} className={status.alertClassName}>
         <StatusIcon className="h-4 w-4" />
-        <AlertTitle className={status.titleClassName}>{status.title}</AlertTitle>
+        <AlertTitle className={status.titleClassName}>
+          {status.title}
+        </AlertTitle>
         <AlertDescription className={status.descriptionClassName}>
           {status.description}
         </AlertDescription>
@@ -202,8 +205,8 @@ export function AzureConfiguration({
           <Info className="h-4 w-4" />
           <AlertTitle>Configuration Needed</AlertTitle>
           <AlertDescription>
-            Azure OpenAI requests require both a resource name and API key. Enter
-            them above or supply the environment variables instead.
+            Azure OpenAI requests require both a resource name and API key.
+            Enter them above or supply the environment variables instead.
           </AlertDescription>
         </Alert>
       )}
@@ -221,14 +224,19 @@ export function AzureConfiguration({
         defaultValue="azure-env"
         className="w-full space-y-4"
       >
-        <AccordionItem value="azure-env" className="border rounded-lg px-4 bg-background">
+        <AccordionItem
+          value="azure-env"
+          className="border rounded-lg px-4 bg-background"
+        >
           <AccordionTrigger className="text-lg font-medium hover:no-underline cursor-pointer">
             Environment Variables (optional)
           </AccordionTrigger>
           <AccordionContent className="pt-4 space-y-4">
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center p-3 bg-muted rounded border">
-                <code className="font-mono text-foreground">{AZURE_API_KEY_VAR}</code>
+                <code className="font-mono text-foreground">
+                  {AZURE_API_KEY_VAR}
+                </code>
                 <span
                   className={`px-2 py-1 rounded text-xs font-medium ${envApiKey ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400" : "bg-red-100 text-red-800 dark:bg-red-800/20 dark:text-red-400"}`}
                 >
@@ -248,9 +256,9 @@ export function AzureConfiguration({
             </div>
             <div className="text-sm text-muted-foreground space-y-2">
               <p>
-                You can continue to configure Azure via environment variables. If
-                both variables are present and no settings are saved, Dyad will use
-                them automatically.
+                You can continue to configure Azure via environment variables.
+                If both variables are present and no settings are saved, Dyad
+                will use them automatically.
               </p>
               <p>
                 Values saved in Settings take precedence over environment
@@ -263,4 +271,3 @@ export function AzureConfiguration({
     </div>
   );
 }
-
