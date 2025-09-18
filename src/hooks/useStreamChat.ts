@@ -5,6 +5,7 @@ import type {
   FileAttachment,
 } from "@/ipc/ipc_types";
 import { useAtom, useSetAtom } from "jotai";
+import { agentWorkflowAtom, agentWorkflowErrorAtom, agentWorkflowLoadingAtom } from "@/atoms/agentAtoms";
 import {
   chatErrorAtom,
   chatMessagesAtom,
@@ -43,6 +44,9 @@ export function useStreamChat({
   const { refreshChats } = useChats(selectedAppId);
   const { refreshApp } = useLoadApp(selectedAppId);
   const setStreamCount = useSetAtom(chatStreamCountAtom);
+  const setAgentWorkflow = useSetAtom(agentWorkflowAtom);
+  const setAgentWorkflowLoading = useSetAtom(agentWorkflowLoadingAtom);
+  const setAgentWorkflowError = useSetAtom(agentWorkflowErrorAtom);
   const { refreshVersions } = useVersions(selectedAppId);
   const { refreshAppIframe } = useRunApp();
   const { countTokens } = useCountTokens();
@@ -122,6 +126,45 @@ export function useStreamChat({
             refreshApp();
             refreshVersions();
             countTokens(chatId, "");
+            if (
+              response.agent &&
+              settings?.selectedChatMode === "agent" &&
+              chatId
+            ) {
+              setAgentWorkflowLoading(true);
+              IpcClient.getInstance()
+                .refreshAgentWorkflow(chatId)
+                .then((workflow) => {
+                  setAgentWorkflow(workflow);
+                  setAgentWorkflowError(null);
+                })
+                .catch((err) => {
+                  console.error("Failed to refresh agent workflow", err);
+                  setAgentWorkflowError(
+                    err instanceof Error
+                      ? err.message
+                      : "Failed to refresh agent workflow",
+                  );
+                })
+                .finally(() => {
+                  setAgentWorkflowLoading(false);
+                });
+            }
+            if (
+              response.agent?.shouldAutoContinue &&
+              settings?.selectedChatMode === "agent" &&
+              chatId &&
+              !abortController.signal.aborted
+            ) {
+              setTimeout(() => {
+                streamMessage({
+                  prompt: "continue",
+                  chatId,
+                  redo: false,
+                  selectedComponent: null,
+                });
+              }, 200);
+            }
           },
           onError: (errorMessage: string) => {
             console.error(`[CHAT] Stream error for ${chatId}:`, errorMessage);
@@ -149,6 +192,9 @@ export function useStreamChat({
       selectedAppId,
       refetchUserBudget,
       settings,
+      setAgentWorkflow,
+      setAgentWorkflowError,
+      setAgentWorkflowLoading,
     ],
   );
 
