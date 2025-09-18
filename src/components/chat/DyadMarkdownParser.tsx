@@ -452,7 +452,7 @@ function renderCustomTag(
     case "dyad-agent-analysis":
       return <DyadAgentAnalysis content={content} />;
     case "dyad-agent-plan":
-      return <DyadAgentPlan content={content} />;
+      return <DyadAgentPlan content={content} inProgress={inProgress} />;
     case "dyad-agent-log":
       return <DyadAgentLog content={content} attributes={attributes} />;
     case "dyad-agent-todo-update":
@@ -468,5 +468,6 @@ function renderCustomTag(
       return null;
   }
 }
+
 
 

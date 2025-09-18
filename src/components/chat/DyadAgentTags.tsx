@@ -207,11 +207,9 @@ function TodoRow({ todo }: { todo: AgentPlanTodo }) {
 
   return (
     <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
-      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+      <div className="flex items-center gap-2 text-sm font-medium text-foreground flex-1 min-w-0">
         <CircleDot className="h-4 w-4 text-blue-500" />
-        <span className="text-xs font-semibold uppercase text-muted-foreground">{todo.todoId}</span>
-        <span className="text-muted-foreground">•</span>
-        <span className="truncate max-w-[220px]">{todo.title}</span>
+                <span className="whitespace-normal break-words">{todo.title}</span>
       </div>
       {badge ? (
         <Badge variant={badge.tone} className="text-[10px] uppercase">
@@ -397,6 +395,8 @@ export function DyadAgentAuto({ attributes }: { attributes: Record<string, strin
     </div>
   );
 }
+
+
 
 
 

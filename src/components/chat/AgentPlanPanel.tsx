@@ -66,17 +66,13 @@ function TodoRow({
         isActive && "border-primary bg-primary/10",
       )}
     >
-      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+      <div className="flex items-center gap-2 text-sm font-medium text-foreground flex-1 min-w-0">
         {isActive ? (
           <PlayCircle className="h-4 w-4 text-primary" />
         ) : (
           <Circle className="h-4 w-4 text-muted-foreground" />
         )}
-        <span className="text-xs font-semibold uppercase text-muted-foreground">
-          {todoId}
-        </span>
-        <span className="text-muted-foreground">•</span>
-        <span className="truncate max-w-[240px]">{title}</span>
+                <span className="whitespace-normal break-words">{title}</span>
       </div>
       <Badge
         variant={isActive ? "outline" : meta.badge}
@@ -187,3 +183,5 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
     </div>
   );
 }
+
+
