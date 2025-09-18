@@ -33,8 +33,12 @@ testWithPo("Azure provider settings UI", async ({ po }) => {
   ).toBeVisible();
 
   // FIX: disambiguate text matches to avoid strict mode violation
-  await expect(po.page.getByText("AZURE_API_KEY", { exact: true })).toBeVisible();
-  await expect(po.page.getByText("AZURE_RESOURCE_NAME", { exact: true })).toBeVisible();
+  await expect(
+    po.page.getByText("AZURE_API_KEY", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    po.page.getByText("AZURE_RESOURCE_NAME", { exact: true }),
+  ).toBeVisible();
 
   // Since no env vars are configured in the test run, both should read "Not Set"
   await expect(
