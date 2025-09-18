@@ -191,6 +191,8 @@ function preprocessUnclosedTags(content: string): {
  * Parse the content to extract custom tags and markdown sections into a unified array
  */
 function parseCustomTags(content: string): ContentPiece[] {
+  // Remove any stray closing dyad/agent tags that may leak into markdown
+  content = content.replace(/<\\\/dyad-[^>]+>/g, '').replace(/<\\\/dyad-agent-[^>]+>/g, '');
   const { processedContent, inProgressTags } = preprocessUnclosedTags(content);
 
   const customTagNames = [
@@ -450,7 +452,7 @@ function renderCustomTag(
     case "dyad-agent-analysis":
       return <DyadAgentAnalysis content={content} />;
     case "dyad-agent-plan":
-      return <DyadAgentPlan content={content} inProgress={inProgress} />;
+      return <DyadAgentPlan content={content} />;
     case "dyad-agent-log":
       return <DyadAgentLog content={content} attributes={attributes} />;
     case "dyad-agent-todo-update":
@@ -466,3 +468,5 @@ function renderCustomTag(
       return null;
   }
 }
+
+
