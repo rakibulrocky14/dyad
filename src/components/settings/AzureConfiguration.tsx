@@ -238,6 +238,7 @@ export function AzureConfiguration({
                   {AZURE_API_KEY_VAR}
                 </code>
                 <span
+                  data-testid="azure-api-key-status"
                   className={`px-2 py-1 rounded text-xs font-medium ${envApiKey ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400" : "bg-red-100 text-red-800 dark:bg-red-800/20 dark:text-red-400"}`}
                 >
                   {envApiKey ? "Set" : "Not Set"}
@@ -248,6 +249,7 @@ export function AzureConfiguration({
                   {AZURE_RESOURCE_NAME_VAR}
                 </code>
                 <span
+                  data-testid="azure-resource-name-status"
                   className={`px-2 py-1 rounded text-xs font-medium ${envResourceName ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400" : "bg-red-100 text-red-800 dark:bg-red-800/20 dark:text-red-400"}`}
                 >
                   {envResourceName ? "Set" : "Not Set"}
