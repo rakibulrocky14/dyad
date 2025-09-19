@@ -120,6 +120,55 @@ function findNextTodo(workflow: AgentWorkflow): AgentTodo | undefined {
   return workflow.todos.find((todo) => todo.status !== "completed");
 }
 
+function normalizeTodoId(todoId?: string | null): string | null {
+  if (!todoId) return null;
+  return todoId.trim().toUpperCase();
+}
+
+function sanitizeTodoUpdates(
+  updates: AgentTodoUpdate[],
+  activeTodoId?: string | null,
+): {
+  updates: AgentTodoUpdate[];
+  handledTodoId: string | null;
+  dropped: Array<{ update: AgentTodoUpdate; reason: string }>;
+} {
+  const normalizedActive = normalizeTodoId(activeTodoId);
+  const result: AgentTodoUpdate[] = [];
+  const dropped: Array<{ update: AgentTodoUpdate; reason: string }> = [];
+  let lockedTodoId = normalizedActive;
+
+  for (const update of updates) {
+    const rawId = update.todoId?.trim();
+    if (!rawId) {
+      dropped.push({ update, reason: "missing todoId" });
+      continue;
+    }
+    const normalized = rawId.toUpperCase();
+
+    if (normalizedActive && normalized !== normalizedActive) {
+      dropped.push({
+        update,
+        reason: `expected active todo ${normalizedActive}`,
+      });
+      continue;
+    }
+
+    if (!lockedTodoId) {
+      lockedTodoId = normalized;
+    } else if (normalized !== lockedTodoId) {
+      dropped.push({
+        update,
+        reason: `already handling ${lockedTodoId}`,
+      });
+      continue;
+    }
+
+    result.push(update);
+  }
+
+  return { updates: result, handledTodoId: lockedTodoId, dropped };
+}
 export async function prepareAgentStream(
   req: ChatStreamParams,
 ): Promise<AgentStreamPreparation> {
@@ -310,6 +359,25 @@ export async function processAgentStreamResult(
     }
   }
 
+  const workflowBefore = await getAgentWorkflowById(workflowId);
+  if (!workflowBefore) {
+    throw new Error(`Workflow ${workflowId} not found when processing agent stream`);
+  }
+
+  const sanitizeResult = sanitizeTodoUpdates(
+    artifacts.todoUpdates,
+    workflowBefore.currentTodoId,
+  );
+
+  if (sanitizeResult.dropped.length) {
+    for (const { update, reason } of sanitizeResult.dropped) {
+      const label = update.todoId ?? "(unknown)";
+      logger.warn(`[agent] Ignoring todo update for ${label}: ${reason}`);
+    }
+  }
+
+  artifacts.todoUpdates = sanitizeResult.updates;
+
   if (artifacts.analysis) {
     await updateAgentAnalysis(workflowId, artifacts.analysis);
   }
@@ -318,15 +386,17 @@ export async function processAgentStreamResult(
     await replaceAgentPlan(workflowId, artifacts.plan, { status: "plan_ready" });
   }
 
-  if (artifacts.todoUpdates.length) {
-    await applyAgentTodoUpdates(
-      workflowId,
-      artifacts.todoUpdates.map((update) => ({
-        todoId: update.todoId,
-        status: update.status ?? "in_progress",
-        dyadTagRefs: update.dyadTagRefs,
-      })),
-    );
+  const updatesToApply = artifacts.todoUpdates.map((update) => ({
+    todoId: update.todoId,
+    status: update.status ?? "in_progress",
+    dyadTagRefs: update.dyadTagRefs,
+  }));
+  const completedActiveTodo = updatesToApply.some(
+    (update) => update.status === "completed",
+  );
+
+  if (updatesToApply.length) {
+    await applyAgentTodoUpdates(workflowId, updatesToApply);
   }
 
   if (artifacts.logs.length) {
@@ -347,8 +417,51 @@ export async function processAgentStreamResult(
     await setAgentWorkflowStatus(workflowId, artifacts.workflowStatus);
   }
 
-  if (artifacts.currentTodoId !== undefined) {
-    await setAgentCurrentTodo(workflowId, artifacts.currentTodoId ?? null);
+  const allowedFocus = new Set<string>();
+  const normalizedActiveBefore = normalizeTodoId(workflowBefore.currentTodoId);
+  if (normalizedActiveBefore) {
+    allowedFocus.add(normalizedActiveBefore);
+  }
+  if (sanitizeResult.handledTodoId) {
+    allowedFocus.add(sanitizeResult.handledTodoId);
+  }
+
+  let focusRequestBlocked = false;
+  let nextCurrentTodoId: string | null | undefined = artifacts.currentTodoId;
+  let shouldUpdateCurrentTodo = false;
+
+  if (nextCurrentTodoId !== undefined) {
+    if (nextCurrentTodoId === null) {
+      shouldUpdateCurrentTodo = true;
+    } else {
+      const normalizedRequested = normalizeTodoId(nextCurrentTodoId);
+      if (
+        !normalizedRequested ||
+        allowedFocus.size === 0 ||
+        !allowedFocus.has(normalizedRequested)
+      ) {
+        const activeLabel =
+          artifacts.todoUpdates[0]?.todoId ??
+          workflowBefore.currentTodoId ??
+          "the active TODO";
+        logger.warn(`[agent] Ignoring focus request for ${nextCurrentTodoId}; agent may only operate on ${activeLabel}.`);
+        nextCurrentTodoId = undefined;
+        focusRequestBlocked = true;
+      } else {
+        shouldUpdateCurrentTodo = true;
+      }
+    }
+  }
+
+  if (completedActiveTodo) {
+    nextCurrentTodoId = null;
+    shouldUpdateCurrentTodo = true;
+  }
+
+  artifacts.currentTodoId = nextCurrentTodoId;
+
+  if (shouldUpdateCurrentTodo) {
+    await setAgentCurrentTodo(workflowId, nextCurrentTodoId ?? null);
   }
 
   if (artifacts.autoAdvance !== undefined) {
@@ -361,6 +474,8 @@ export async function processAgentStreamResult(
 
   const shouldAutoContinue = Boolean(
     workflow.autoAdvance &&
+      !completedActiveTodo &&
+      !focusRequestBlocked &&
       pendingTodos.length > 0 &&
       (!activeTodo || activeTodo.status !== "in_progress"),
   );
@@ -371,3 +486,5 @@ export async function processAgentStreamResult(
     shouldAutoContinue,
   };
 }
+
+
