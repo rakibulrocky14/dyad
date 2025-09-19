@@ -19,6 +19,7 @@ import {
 import type {
   AgentCommand,
   AgentTodo,
+  AgentTodoUpdate,
   AgentWorkflow,
   AgentWorkflowStatus,
 } from "@/agents/dayd/types";
@@ -145,7 +146,7 @@ export async function prepareAgentStream(
     prompt: req.prompt,
   } as Record<string, unknown>;
 
-  const applyUpdates: Array<{ todoId: string; status: string }> = [];
+  const applyUpdates: AgentTodoUpdate[] = []; 
   let targetTodo: AgentTodo | undefined;
 
   switch (command.kind) {
@@ -172,10 +173,13 @@ export async function prepareAgentStream(
       break;
     }
     case "revise": {
-      const todoId = command.payload?.todoId;
-      const todo = workflow.todos.find(
-        (item) => item.todoId.toUpperCase() === todoId?.toUpperCase(),
-      );
+      const rawTodoId = command.payload?.todoId;
+      const todoId = typeof rawTodoId === "string" ? rawTodoId : undefined;
+      const todo = todoId
+        ? workflow.todos.find(
+            (item) => item.todoId.toUpperCase() === todoId.toUpperCase(),
+          )
+        : undefined;
       if (todo) {
         applyUpdates.push({ todoId: todo.todoId, status: "revising" });
         await appendAgentLog(workflowRow.id, {
@@ -185,9 +189,10 @@ export async function prepareAgentStream(
           metadata: commandLogPayload,
         });
       } else {
+        const missingId = todoId ?? "(unknown)";
         await appendAgentLog(workflowRow.id, {
           logType: "system",
-          content: `Revise command referenced missing todo ${todoId}`,
+          content: `Revise command referenced missing todo ${missingId}`,
           metadata: commandLogPayload,
         });
       }

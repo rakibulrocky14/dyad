@@ -17,6 +17,7 @@ import {
   ShieldHalf,
   Sparkles,
   Timer,
+  Loader2,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -222,19 +223,26 @@ function TodoRow({ todo }: { todo: AgentPlanTodo }) {
 
 export function DyadAgentPlan({
   content,
+  inProgress = false,
 }: {
   content: string;
+  inProgress?: boolean;
 }) {
   const data = parseJsonContent<AgentPlan>(content) ?? {};
   const todos = data.todos ?? [];
 
   return (
     <div className="my-3 space-y-2 rounded-lg border border-blue-300/40 bg-blue-500/5 p-4 text-sm">
-      <div className="flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-300">
+      <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-300">
         <ListChecks className="h-4 w-4" /> Agent Plan
         {data.version ? (
           <Badge variant="outline" className="text-[10px] uppercase">
             v{data.version}
+          </Badge>
+        ) : null}
+        {inProgress ? (
+          <Badge variant="secondary" className="flex items-center gap-1 text-[10px] uppercase">
+            <Loader2 className="h-3 w-3 animate-spin" /> Updating
           </Badge>
         ) : null}
       </div>
@@ -395,6 +403,8 @@ export function DyadAgentAuto({ attributes }: { attributes: Record<string, strin
     </div>
   );
 }
+
+
 
 
 

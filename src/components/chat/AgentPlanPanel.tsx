@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type ReactElement } from "react";
 import { useAgentWorkflow } from "@/hooks/useAgentWorkflow";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -27,7 +27,7 @@ const WORKFLOW_STATUS_LABEL: Record<string, string> = {
   error: "Needs attention",
 };
 
-const WORKFLOW_STATUS_ICON: Record<string, JSX.Element> = {
+const WORKFLOW_STATUS_ICON: Record<string, ReactElement> = {
   plan_ready: <PauseCircle className="h-4 w-4 text-blue-500" />,
   executing: <PlayCircle className="h-4 w-4 text-primary" />,
   revising: <ShieldAlert className="h-4 w-4 text-amber-500" />,

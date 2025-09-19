@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import type {
   ComponentSelection,
   Message,
@@ -54,6 +54,7 @@ export function useStreamChat({
   const { checkProblems } = useCheckProblems(selectedAppId);
   const { settings } = useSettings();
   const posthog = usePostHog();
+  const abortControllerRef = useRef<AbortController | null>(null);
   let chatId: number | undefined;
 
   if (hasChatId) {
@@ -85,6 +86,10 @@ export function useStreamChat({
 
       setError(null);
       setIsStreaming(true);
+
+      abortControllerRef.current?.abort();
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
       let hasIncrementedStreamCount = false;
       try {
@@ -165,10 +170,16 @@ export function useStreamChat({
                 });
               }, 200);
             }
+            if (abortControllerRef.current === abortController) {
+              abortControllerRef.current = null;
+            }
           },
           onError: (errorMessage: string) => {
             console.error(`[CHAT] Stream error for ${chatId}:`, errorMessage);
             setError(errorMessage);
+            if (abortControllerRef.current === abortController) {
+              abortControllerRef.current = null;
+            }
 
             // Keep the same as above
             setIsStreaming(false);
@@ -182,6 +193,9 @@ export function useStreamChat({
         console.error("[CHAT] Exception during streaming setup:", error);
         setIsStreaming(false);
         setError(error instanceof Error ? error.message : String(error));
+        if (abortControllerRef.current === abortController) {
+          abortControllerRef.current = null;
+        }
       }
     },
     [
@@ -198,11 +212,27 @@ export function useStreamChat({
     ],
   );
 
+  const cancelStream = useCallback(
+    (cancelChatId?: number) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      if (cancelChatId) {
+        IpcClient.getInstance().cancelChatStream(cancelChatId);
+      }
+      setIsStreaming(false);
+    },
+    [setIsStreaming],
+  );
+
   return {
     streamMessage,
     isStreaming,
     error,
     setError,
+    cancelStream,
     setIsStreaming,
   };
 }
+

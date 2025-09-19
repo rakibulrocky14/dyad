@@ -287,7 +287,7 @@ export async function replaceAgentPlan(
           inputs: JSON.stringify(todo.inputs ?? []),
           outputs: JSON.stringify(todo.outputs ?? []),
           completionCriteria: todo.completionCriteria ?? null,
-          status: todo.status,
+          status: todo.status ?? "pending",
           dyadTagRefs: JSON.stringify(todo.dyadTagRefs ?? []),
           orderIndex: index,
         })),
@@ -396,9 +396,10 @@ export async function setAgentAutoAdvance(
 export async function getWorkflowRowByChatId(
   chatId: number,
 ): Promise<AgentWorkflowRow | null> {
-  return db.query.agent_workflows.findFirst({
+  const row = await db.query.agent_workflows.findFirst({
     where: eq(agent_workflows.chatId, chatId),
   });
+  return row ?? null;
 }
 
 export async function removeAgentWorkflowData(chatId: number): Promise<void> {

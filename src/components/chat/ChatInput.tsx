@@ -116,7 +116,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     : "Awaiting plan";
   const appId = useAtomValue(selectedAppIdAtom);
   const { refreshVersions } = useVersions(appId);
-  const { streamMessage, isStreaming, setIsStreaming, error, setError } =
+  const { streamMessage, isStreaming, setIsStreaming, cancelStream, error, setError } =
     useStreamChat();
   const [showError, setShowError] = useState(true);
   const [isApproving, setIsApproving] = useState(false); // State for approving
@@ -250,9 +250,10 @@ export function ChatInput({ chatId }: { chatId?: number }) {
 
   const handleCancel = () => {
     if (chatId) {
-      IpcClient.getInstance().cancelChatStream(chatId);
+      cancelStream(chatId);
+    } else {
+      cancelStream();
     }
-    setIsStreaming(false);
   };
 
   const dismissError = () => {
@@ -385,7 +386,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   variant="outline"
-                  size="xs"
+                  size="sm"
                   onClick={() => void sendAgentCommand("start")}
                   disabled={
                     !chatId ||
@@ -402,7 +403,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
                 </Button>
                 <Button
                   variant="outline"
-                  size="xs"
+                  size="sm"
                   onClick={() => void sendAgentCommand("continue")}
                   disabled={
                     !chatId ||
@@ -419,7 +420,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
                 </Button>
                 <Button
                   variant="ghost"
-                  size="xs"
+                  size="sm"
                   onClick={() => void sendAgentCommand("change plan")}
                   disabled={!chatId || isStreaming}
                 >
