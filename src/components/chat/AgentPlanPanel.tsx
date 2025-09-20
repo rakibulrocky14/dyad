@@ -88,8 +88,12 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
   const { workflow, isLoading, error, refresh, setAutoAdvance } =
     useAgentWorkflow(chatId);
 
-  const statusLabel = useMemo(() => {
+    const statusLabel = useMemo(() => {
     if (!workflow) return "Awaiting plan";
+    if (workflow.status === "analysis") {
+      const needsClarifications = (workflow.analysis?.clarifications?.length ?? 0) > 0;
+      return needsClarifications ? "Awaiting clarifications" : "Analyzing requirements";
+    }
     return WORKFLOW_STATUS_LABEL[workflow.status] ?? workflow.status;
   }, [workflow]);
 
@@ -175,10 +179,11 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
             ))
           ) : (
             <li className="text-xs text-muted-foreground">
-              Plan will appear after analysis completes.
+              {workflow?.analysis?.clarifications?.length
+                ? 'Answer the clarifications to generate the plan.'
+                : 'Plan will appear after analysis completes.'}
             </li>
-          )}
-        </ul>
+          )}        </ul>
       </ScrollArea>
     </div>
   );

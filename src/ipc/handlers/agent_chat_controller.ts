@@ -379,12 +379,24 @@ export async function processAgentStreamResult(
   artifacts.todoUpdates = sanitizeResult.updates;
 
   if (artifacts.analysis) {
-    await updateAgentAnalysis(workflowId, artifacts.analysis);
-  }
+  await updateAgentAnalysis(workflowId, artifacts.analysis);
+}
 
-  if (artifacts.plan) {
+if (artifacts.plan) {
+  // Gate plan creation until clarifications are answered: if the latest
+  // analysis contains clarifications and no plan exists yet, ignore the
+  // emitted plan for now to force a user reply.
+  const clarCount = (artifacts.analysis?.clarifications?.length ??
+    (workflowBefore.analysis?.clarifications?.length ?? 0));
+  const hasClarifications = (clarCount ?? 0) > 0;
+  const hasExistingTodos = (workflowBefore.todos?.length ?? 0) > 0;
+  if (hasClarifications && !hasExistingTodos) {
+    logger.warn('[agent] Plan emitted while clarifications exist; holding until user responds.');
+    // Intentionally skip replaceAgentPlan here
+  } else {
     await replaceAgentPlan(workflowId, artifacts.plan, { status: "plan_ready" });
   }
+}
 
   const updatesToApply = artifacts.todoUpdates.map((update) => ({
     todoId: update.todoId,

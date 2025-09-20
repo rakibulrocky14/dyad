@@ -114,61 +114,83 @@ function PillList({ items }: { items?: string[] }) {
   );
 }
 
-export function DyadAgentAnalysis({ content }: { content: string }) {
-  const data = parseJsonContent<AgentAnalysis>(content) ?? {};
-
+function ClarificationsCallout({ items }: { items?: string[] }) {
+  if (!items?.length) return null;
   return (
-    <div className="my-3 space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
-      <h3 className="flex items-center gap-2 text-sm font-semibold text-primary">
-        <Compass className="h-4 w-4" /> Agent Analysis
-      </h3>
-      <div className="grid gap-3 md:grid-cols-2">
-        <Section title="Goals" icon={<Flag className="h-3.5 w-3.5" />}>
-          <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
-            {(data.goals ?? []).map((goal, index) => (
-              <li key={`goal-${index}`}>{goal}</li>
-            ))}
-          </ul>
-        </Section>
-        <Section title="Constraints" icon={<ShieldHalf className="h-3.5 w-3.5" />}>
-          <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
-            {(data.constraints ?? []).map((constraint, index) => (
-              <li key={`constraint-${index}`}>{constraint}</li>
-            ))}
-          </ul>
-        </Section>
-        <Section
-          title="Acceptance Criteria"
-          icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-        >
-          <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
-            {(data.acceptanceCriteria ?? []).map((criterion, index) => (
-              <li key={`criteria-${index}`}>{criterion}</li>
-            ))}
-          </ul>
-        </Section>
-        <Section title="Risks" icon={<AlertTriangle className="h-3.5 w-3.5" />}>
-          <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
-            {(data.risks ?? []).map((risk, index) => (
-              <li key={`risk-${index}`}>{risk}</li>
-            ))}
-          </ul>
-        </Section>
+    <div className="my-3 rounded-lg border border-amber-300/60 bg-amber-500/10 p-4 text-sm">
+      <div className="mb-2 flex items-center gap-2 text-amber-800 dark:text-amber-200">
+        <ClipboardList className="h-4 w-4" />
+        <span className="font-semibold">Clarifications Needed</span>
       </div>
-      {data.clarifications?.length ? (
-        <Section title="Clarifications" icon={<ClipboardList className="h-3.5 w-3.5" />}>
-          <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
-            {data.clarifications.map((item, index) => (
-              <li key={`clar-${index}`}>{item}</li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-      <PillList items={data.dyadTagRefs} />
+      <ol className="list-decimal space-y-1 pl-5 text-xs text-foreground">
+        {items.map((item, idx) => {
+          const trimmed = item.trim();
+          const match = trimmed.match(/^(\d+)[\.)]\s*(.*)$/);
+          const value = match ? Number.parseInt(match[1], 10) : idx + 1;
+          const questionText = (match ? match[2] : trimmed).trim();
+          const displayText = questionText.length ? questionText : trimmed || item;
+          return (
+            <li key={`clar-${idx}`} value={value}>
+              {displayText}
+            </li>
+          );
+        })}
+      </ol>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Reply with answers using numbers (e.g., 1) ..., 2) ..., 3) ...).
+      </p>
     </div>
   );
 }
 
+export function DyadAgentAnalysis({ content }: { content: string }) {
+  const data = parseJsonContent<AgentAnalysis>(content) ?? {};
+
+  return (
+    <>
+      <div className="my-3 space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-primary">
+          <Compass className="h-4 w-4" /> Agent Analysis
+        </h3>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Section title="Goals" icon={<Flag className="h-3.5 w-3.5" />}>
+            <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+              {(data.goals ?? []).map((goal, index) => (
+                <li key={`goal-${index}`}>{goal}</li>
+              ))}
+            </ul>
+          </Section>
+          <Section title="Constraints" icon={<ShieldHalf className="h-3.5 w-3.5" />}>
+            <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+              {(data.constraints ?? []).map((constraint, index) => (
+                <li key={`constraint-${index}`}>{constraint}</li>
+              ))}
+            </ul>
+          </Section>
+          <Section
+            title="Acceptance Criteria"
+            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+          >
+            <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+              {(data.acceptanceCriteria ?? []).map((criterion, index) => (
+                <li key={`criteria-${index}`}>{criterion}</li>
+              ))}
+            </ul>
+          </Section>
+          <Section title="Risks" icon={<AlertTriangle className="h-3.5 w-3.5" />}>
+            <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+              {(data.risks ?? []).map((risk, index) => (
+                <li key={`risk-${index}`}>{risk}</li>
+              ))}
+            </ul>
+          </Section>
+        </div>
+        <PillList items={data.dyadTagRefs} />
+      </div>
+      <ClarificationsCallout items={data.clarifications} />
+    </>
+  );
+}
 const statusBadgeMap: Record<string, { label: string; tone: "default" | "secondary" | "destructive" | "outline"; icon: ReactNode } | undefined> = {
   completed: {
     label: "Completed",
