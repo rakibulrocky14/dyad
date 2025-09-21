@@ -5,10 +5,12 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { getAgentConfig } from "@/config/agent-config";
 import {
   CheckCircle2,
   Circle,
   Loader2,
+  Shield,
   PauseCircle,
   PlayCircle,
   RefreshCcw,
@@ -72,7 +74,7 @@ function TodoRow({
         ) : (
           <Circle className="h-4 w-4 text-muted-foreground" />
         )}
-                <span className="whitespace-normal break-words">{title}</span>
+        <span className="whitespace-normal break-words">{title}</span>
       </div>
       <Badge
         variant={isActive ? "outline" : meta.badge}
@@ -88,11 +90,16 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
   const { workflow, isLoading, error, refresh, setAutoAdvance } =
     useAgentWorkflow(chatId);
 
-    const statusLabel = useMemo(() => {
+  const config = getAgentConfig();
+
+  const statusLabel = useMemo(() => {
     if (!workflow) return "Awaiting plan";
     if (workflow.status === "analysis") {
-      const needsClarifications = (workflow.analysis?.clarifications?.length ?? 0) > 0;
-      return needsClarifications ? "Awaiting clarifications" : "Analyzing requirements";
+      const needsClarifications =
+        (workflow.analysis?.clarifications?.length ?? 0) > 0;
+      return needsClarifications
+        ? "Awaiting clarifications"
+        : "Analyzing requirements";
     }
     return WORKFLOW_STATUS_LABEL[workflow.status] ?? workflow.status;
   }, [workflow]);
@@ -102,8 +109,10 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
     if (workflow.status === "analysis") {
       return <Loader2 className="h-3 w-3 animate-spin text-primary" />;
     }
-    return WORKFLOW_STATUS_ICON[workflow.status] ?? (
-      <Circle className="h-4 w-4 text-muted-foreground" />
+    return (
+      WORKFLOW_STATUS_ICON[workflow.status] ?? (
+        <Circle className="h-4 w-4 text-muted-foreground" />
+      )
     );
   }, [workflow]);
 
@@ -130,7 +139,9 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
           <div className="flex items-center gap-2">
             {headerIcon}
             <span className="text-sm font-semibold">Agent Plan</span>
-            {isLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+            {isLoading && (
+              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+            )}
           </div>
           <p className="text-xs text-muted-foreground">{statusLabel}</p>
         </div>
@@ -153,11 +164,20 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
             onClick={() => refresh()}
             disabled={isLoading}
           >
-            <RefreshCcw className={cn("h-3 w-3", isLoading && "animate-spin")} />
+            <RefreshCcw
+              className={cn("h-3 w-3", isLoading && "animate-spin")}
+            />
             <span className="ml-1">Sync</span>
           </Button>
         </div>
       </div>
+
+      {config.enforceOneTodoPerResponse && (
+        <div className="mt-2 flex items-center gap-2 rounded bg-blue-50 px-2 py-1.5 text-xs text-blue-700">
+          <Shield className="h-3 w-3" />
+          <span>Human-like workflow: One TODO at a time</span>
+        </div>
+      )}
 
       {error && (
         <p className="mt-2 rounded bg-destructive/10 px-2 py-1 text-xs text-destructive">
@@ -180,13 +200,12 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
           ) : (
             <li className="text-xs text-muted-foreground">
               {workflow?.analysis?.clarifications?.length
-                ? 'Answer the clarifications to generate the plan.'
-                : 'Plan will appear after analysis completes.'}
+                ? "Answer the clarifications to generate the plan."
+                : "Plan will appear after analysis completes."}
             </li>
-          )}        </ul>
+          )}{" "}
+        </ul>
       </ScrollArea>
     </div>
   );
 }
-
-

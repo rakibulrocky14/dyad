@@ -115,6 +115,7 @@ export async function processFullResponseActions(
     const dyadRenameTags = getDyadRenameTags(fullResponse);
     const dyadDeletePaths = getDyadDeleteTags(fullResponse);
     const dyadAddDependencyPackages = getDyadAddDependencyTags(fullResponse);
+
     const dyadExecuteSqlQueries = chatWithApp.app.supabaseProjectId
       ? getDyadExecuteSqlTags(fullResponse)
       : [];

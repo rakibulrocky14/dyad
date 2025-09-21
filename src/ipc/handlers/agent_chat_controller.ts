@@ -23,10 +23,8 @@ import type {
   AgentWorkflow,
   AgentWorkflowStatus,
 } from "@/agents/dayd/types";
-import {
-  AgentCommandSchema,
-  AgentTodoUpdateSchema,
-} from "@/agents/dayd/types";
+import { AgentCommandSchema, AgentTodoUpdateSchema } from "@/agents/dayd/types";
+import { getAgentConfig } from "@/config/agent-config";
 
 const logger = log.scope("agent-chat-controller");
 
@@ -44,7 +42,10 @@ export interface AgentStreamResult {
   shouldAutoContinue: boolean;
 }
 
-function detectCommand(prompt: string, workflow: AgentWorkflow | null): AgentCommand {
+function detectCommand(
+  prompt: string,
+  workflow: AgentWorkflow | null,
+): AgentCommand {
   const trimmed = prompt.trim();
   const lower = trimmed.toLowerCase();
 
@@ -67,7 +68,10 @@ function detectCommand(prompt: string, workflow: AgentWorkflow | null): AgentCom
   }
 
   if (lower === "change plan" || lower === "change-plan") {
-    return { kind: "change_plan", payload: { prompt: trimmed } } as AgentCommand;
+    return {
+      kind: "change_plan",
+      payload: { prompt: trimmed },
+    } as AgentCommand;
   }
 
   if (lower.startsWith("revise")) {
@@ -90,12 +94,18 @@ function detectCommand(prompt: string, workflow: AgentWorkflow | null): AgentCom
 
   // If the user explicitly requests auto-advance toggle
   if (lower === "auto" || lower === "auto continue") {
-    return { kind: "custom", payload: { prompt: trimmed, toggleAuto: true } } as AgentCommand;
+    return {
+      kind: "custom",
+      payload: { prompt: trimmed, toggleAuto: true },
+    } as AgentCommand;
   }
 
   // If there are no remaining todos, treat as review conversation
   if (remainingTodos.length === 0) {
-    return { kind: "custom", payload: { prompt: trimmed, stage: "completed" } } as AgentCommand;
+    return {
+      kind: "custom",
+      payload: { prompt: trimmed, stage: "completed" },
+    } as AgentCommand;
   }
 
   return { kind: "custom", payload: { prompt: trimmed } } as AgentCommand;
@@ -128,15 +138,20 @@ function normalizeTodoId(todoId?: string | null): string | null {
 function sanitizeTodoUpdates(
   updates: AgentTodoUpdate[],
   activeTodoId?: string | null,
+  enforceOneTaskRule?: boolean,
 ): {
   updates: AgentTodoUpdate[];
   handledTodoId: string | null;
   dropped: Array<{ update: AgentTodoUpdate; reason: string }>;
 } {
+  const config = getAgentConfig();
+  const shouldEnforceOneTask =
+    enforceOneTaskRule ?? config.enforceOneTodoPerResponse;
   const normalizedActive = normalizeTodoId(activeTodoId);
   const result: AgentTodoUpdate[] = [];
   const dropped: Array<{ update: AgentTodoUpdate; reason: string }> = [];
   let lockedTodoId = normalizedActive;
+  let hasCompletedTodo = false;
 
   for (const update of updates) {
     const rawId = update.todoId?.trim();
@@ -162,6 +177,24 @@ function sanitizeTodoUpdates(
         reason: `already handling ${lockedTodoId}`,
       });
       continue;
+    }
+
+    // Enforce one-task-per-response rule
+    if (
+      shouldEnforceOneTask &&
+      update.status === "completed" &&
+      hasCompletedTodo
+    ) {
+      dropped.push({
+        update,
+        reason:
+          "only one TODO can be completed per response (human-like workflow)",
+      });
+      continue;
+    }
+
+    if (update.status === "completed") {
+      hasCompletedTodo = true;
     }
 
     result.push(update);
@@ -195,7 +228,7 @@ export async function prepareAgentStream(
     prompt: req.prompt,
   } as Record<string, unknown>;
 
-  const applyUpdates: AgentTodoUpdate[] = []; 
+  const applyUpdates: AgentTodoUpdate[] = [];
   let targetTodo: AgentTodo | undefined;
 
   switch (command.kind) {
@@ -271,7 +304,9 @@ export async function prepareAgentStream(
       break;
     }
     case "continue": {
-      const pending = workflow.todos.filter((todo) => todo.status !== "completed");
+      const pending = workflow.todos.filter(
+        (todo) => todo.status !== "completed",
+      );
       targetTodo = pending[0];
       if (targetTodo) {
         applyUpdates.push({ todoId: targetTodo.todoId, status: "in_progress" });
@@ -361,42 +396,108 @@ export async function processAgentStreamResult(
 
   const workflowBefore = await getAgentWorkflowById(workflowId);
   if (!workflowBefore) {
-    throw new Error(`Workflow ${workflowId} not found when processing agent stream`);
+    throw new Error(
+      `Workflow ${workflowId} not found when processing agent stream`,
+    );
   }
 
+  // Enforce one-TODO-per-response rule for human-like agent workflow
+  const config = getAgentConfig();
   const sanitizeResult = sanitizeTodoUpdates(
     artifacts.todoUpdates,
     workflowBefore.currentTodoId,
+    config.enforceOneTodoPerResponse,
   );
 
   if (sanitizeResult.dropped.length) {
     for (const { update, reason } of sanitizeResult.dropped) {
       const label = update.todoId ?? "(unknown)";
-      logger.warn(`[agent] Ignoring todo update for ${label}: ${reason}`);
+
+      if (config.debug.logDroppedUpdates) {
+        logger.warn(`[agent] Ignoring todo update for ${label}: ${reason}`);
+      }
+
+      // Log a system message for dropped TODO attempts to help debugging
+      if (config.logEnforcementActions) {
+        await appendAgentLog(workflowId, {
+          logType: "system",
+          content: `Blocked attempt to work on multiple TODOs: ${label} - ${reason}`,
+          metadata: {
+            droppedUpdate: update,
+            enforcementRule: "one-todo-per-response",
+          },
+        });
+      }
     }
   }
 
   artifacts.todoUpdates = sanitizeResult.updates;
 
-  if (artifacts.analysis) {
-  await updateAgentAnalysis(workflowId, artifacts.analysis);
-}
+  // Additional validation: ensure we're not processing too many tasks at once
+  const completedCount = sanitizeResult.updates.filter(
+    (u) => u.status === "completed",
+  ).length;
+  const inProgressCount = sanitizeResult.updates.filter(
+    (u) => u.status === "in_progress",
+  ).length;
 
-if (artifacts.plan) {
-  // Gate plan creation until clarifications are answered: if the latest
-  // analysis contains clarifications and no plan exists yet, ignore the
-  // emitted plan for now to force a user reply.
-  const clarCount = (artifacts.analysis?.clarifications?.length ??
-    (workflowBefore.analysis?.clarifications?.length ?? 0));
-  const hasClarifications = (clarCount ?? 0) > 0;
-  const hasExistingTodos = (workflowBefore.todos?.length ?? 0) > 0;
-  if (hasClarifications && !hasExistingTodos) {
-    logger.warn('[agent] Plan emitted while clarifications exist; holding until user responds.');
-    // Intentionally skip replaceAgentPlan here
-  } else {
-    await replaceAgentPlan(workflowId, artifacts.plan, { status: "plan_ready" });
+  if (completedCount > 1) {
+    if (config.debug.verboseLogging) {
+      logger.warn(
+        `[agent] Multiple TODO completions detected (${completedCount}) - this violates the one-task-per-response rule`,
+      );
+    }
+
+    if (config.logEnforcementActions) {
+      await appendAgentLog(workflowId, {
+        logType: "system",
+        content: `Warning: Agent attempted to complete ${completedCount} TODOs in one response. Only human-like, one-task-at-a-time workflow is allowed.`,
+        metadata: { completedCount, enforcementRule: "one-todo-per-response" },
+      });
+    }
   }
-}
+
+  if (inProgressCount > config.maxSimultaneousTodos) {
+    if (config.debug.verboseLogging) {
+      logger.warn(
+        `[agent] Multiple TODO starts detected (${inProgressCount}) - this may indicate non-human workflow`,
+      );
+    }
+
+    if (config.logEnforcementActions) {
+      await appendAgentLog(workflowId, {
+        logType: "system",
+        content: `Notice: Agent started ${inProgressCount} TODOs simultaneously. Consider focusing on one task at a time for better human-like workflow.`,
+        metadata: { inProgressCount, enforcementRule: "focus-recommendation" },
+      });
+    }
+  }
+
+  if (artifacts.analysis) {
+    await updateAgentAnalysis(workflowId, artifacts.analysis);
+  }
+
+  if (artifacts.plan) {
+    // Gate plan creation until clarifications are answered: if the latest
+    // analysis contains clarifications and no plan exists yet, ignore the
+    // emitted plan for now to force a user reply.
+    const clarCount =
+      artifacts.analysis?.clarifications?.length ??
+      workflowBefore.analysis?.clarifications?.length ??
+      0;
+    const hasClarifications = (clarCount ?? 0) > 0;
+    const hasExistingTodos = (workflowBefore.todos?.length ?? 0) > 0;
+    if (hasClarifications && !hasExistingTodos) {
+      logger.warn(
+        "[agent] Plan emitted while clarifications exist; holding until user responds.",
+      );
+      // Intentionally skip replaceAgentPlan here
+    } else {
+      await replaceAgentPlan(workflowId, artifacts.plan, {
+        status: "plan_ready",
+      });
+    }
+  }
 
   const updatesToApply = artifacts.todoUpdates.map((update) => ({
     todoId: update.todoId,
@@ -456,7 +557,9 @@ if (artifacts.plan) {
           artifacts.todoUpdates[0]?.todoId ??
           workflowBefore.currentTodoId ??
           "the active TODO";
-        logger.warn(`[agent] Ignoring focus request for ${nextCurrentTodoId}; agent may only operate on ${activeLabel}.`);
+        logger.warn(
+          `[agent] Ignoring focus request for ${nextCurrentTodoId}; agent may only operate on ${activeLabel}.`,
+        );
         nextCurrentTodoId = undefined;
         focusRequestBlocked = true;
       } else {
@@ -481,8 +584,12 @@ if (artifacts.plan) {
   }
 
   const workflow = (await getAgentWorkflowById(workflowId))!;
-  const pendingTodos = workflow.todos.filter((todo) => todo.status !== "completed");
-  const activeTodo = workflow.todos.find((todo) => todo.todoId === workflow.currentTodoId);
+  const pendingTodos = workflow.todos.filter(
+    (todo) => todo.status !== "completed",
+  );
+  const activeTodo = workflow.todos.find(
+    (todo) => todo.todoId === workflow.currentTodoId,
+  );
 
   const shouldAutoContinue = Boolean(
     workflow.autoAdvance &&
@@ -498,5 +605,3 @@ if (artifacts.plan) {
     shouldAutoContinue,
   };
 }
-
-

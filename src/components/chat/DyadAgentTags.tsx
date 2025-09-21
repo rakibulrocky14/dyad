@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Activity,
+  AlertCircle,
   AlertTriangle,
   CheckCircle2,
   Circle,
@@ -13,6 +14,7 @@ import {
   ListChecks,
   PauseCircle,
   PlayCircle,
+  Shield,
   ShieldCheck,
   ShieldHalf,
   Sparkles,
@@ -128,7 +130,9 @@ function ClarificationsCallout({ items }: { items?: string[] }) {
           const match = trimmed.match(/^(\d+)[\.)]\s*(.*)$/);
           const value = match ? Number.parseInt(match[1], 10) : idx + 1;
           const questionText = (match ? match[2] : trimmed).trim();
-          const displayText = questionText.length ? questionText : trimmed || item;
+          const displayText = questionText.length
+            ? questionText
+            : trimmed || item;
           return (
             <li key={`clar-${idx}`} value={value}>
               {displayText}
@@ -160,7 +164,10 @@ export function DyadAgentAnalysis({ content }: { content: string }) {
               ))}
             </ul>
           </Section>
-          <Section title="Constraints" icon={<ShieldHalf className="h-3.5 w-3.5" />}>
+          <Section
+            title="Constraints"
+            icon={<ShieldHalf className="h-3.5 w-3.5" />}
+          >
             <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
               {(data.constraints ?? []).map((constraint, index) => (
                 <li key={`constraint-${index}`}>{constraint}</li>
@@ -177,7 +184,10 @@ export function DyadAgentAnalysis({ content }: { content: string }) {
               ))}
             </ul>
           </Section>
-          <Section title="Risks" icon={<AlertTriangle className="h-3.5 w-3.5" />}>
+          <Section
+            title="Risks"
+            icon={<AlertTriangle className="h-3.5 w-3.5" />}
+          >
             <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
               {(data.risks ?? []).map((risk, index) => (
                 <li key={`risk-${index}`}>{risk}</li>
@@ -191,7 +201,15 @@ export function DyadAgentAnalysis({ content }: { content: string }) {
     </>
   );
 }
-const statusBadgeMap: Record<string, { label: string; tone: "default" | "secondary" | "destructive" | "outline"; icon: ReactNode } | undefined> = {
+const statusBadgeMap: Record<
+  string,
+  | {
+      label: string;
+      tone: "default" | "secondary" | "destructive" | "outline";
+      icon: ReactNode;
+    }
+  | undefined
+> = {
   completed: {
     label: "Completed",
     tone: "default",
@@ -232,7 +250,7 @@ function TodoRow({ todo }: { todo: AgentPlanTodo }) {
     <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
       <div className="flex items-center gap-2 text-sm font-medium text-foreground flex-1 min-w-0">
         <CircleDot className="h-4 w-4 text-blue-500" />
-                <span className="whitespace-normal break-words">{todo.title}</span>
+        <span className="whitespace-normal break-words">{todo.title}</span>
       </div>
       {badge ? (
         <Badge variant={badge.tone} className="text-[10px] uppercase">
@@ -263,7 +281,10 @@ export function DyadAgentPlan({
           </Badge>
         ) : null}
         {inProgress ? (
-          <Badge variant="secondary" className="flex items-center gap-1 text-[10px] uppercase">
+          <Badge
+            variant="secondary"
+            className="flex items-center gap-1 text-[10px] uppercase"
+          >
             <Loader2 className="h-3 w-3 animate-spin" /> Updating
           </Badge>
         ) : null}
@@ -272,7 +293,9 @@ export function DyadAgentPlan({
         {todos.length ? (
           todos.map((todo) => <TodoRow key={todo.todoId} todo={todo} />)
         ) : (
-          <p className="text-xs text-muted-foreground">Plan details will appear here once generated.</p>
+          <p className="text-xs text-muted-foreground">
+            Plan details will appear here once generated.
+          </p>
         )}
       </div>
     </div>
@@ -289,6 +312,19 @@ const logIconMap: Record<AgentLogType, ReactNode> = {
   system: <AlertTriangle className="h-3.5 w-3.5 text-red-500" />,
 };
 
+const logTypeMap: Record<
+  AgentLogType,
+  { label: string; tone: "default" | "secondary" | "destructive" | "outline" }
+> = {
+  analysis: { label: "Analysis", tone: "default" },
+  plan: { label: "Planning", tone: "default" },
+  execution: { label: "Execution", tone: "default" },
+  review: { label: "Review", tone: "secondary" },
+  command: { label: "Command", tone: "outline" },
+  validation: { label: "Validation", tone: "secondary" },
+  system: { label: "System", tone: "destructive" },
+};
+
 export function DyadAgentLog({
   content,
   attributes,
@@ -299,31 +335,49 @@ export function DyadAgentLog({
   const log: AgentLog = {
     todoId: attributes.todoid ?? attributes.todoId ?? undefined,
     todoKey: attributes.todokey ?? attributes.todoKey ?? undefined,
-    logType: (attributes.type ?? attributes.logtype ?? "execution") as AgentLogType,
+    logType: (attributes.type ??
+      attributes.logtype ??
+      "execution") as AgentLogType,
     content,
     dyadTagRefs: attributes.dyadtagrefs
       ? attributes.dyadtagrefs.split(/[\s,]+/).filter(Boolean)
       : undefined,
   };
 
-  const icon = logIconMap[log.logType] ?? <FileText className="h-3.5 w-3.5" />;
+  // Check if this is an enforcement-related system log
+  const isEnforcementLog =
+    log.logType === "system" &&
+    (content.toLowerCase().includes("blocked attempt") ||
+      content.toLowerCase().includes("one todo") ||
+      content.toLowerCase().includes("enforcement") ||
+      content.toLowerCase().includes("human-like workflow") ||
+      content.toLowerCase().includes("only one todo can be completed") ||
+      content.toLowerCase().includes("one-todo-per-response"));
+
+  // If it's an enforcement log, show the special enforcement component
+  if (isEnforcementLog) {
+    return <DyadAgentEnforcement blocked={true} reason={content} />;
+  }
+
+  const icon = logIconMap[log.logType] ?? <CircleDot className="h-3.5 w-3.5" />;
+  const badge = logTypeMap[log.logType];
 
   return (
-    <div className="my-3 space-y-2 rounded-md border border-border bg-background p-3 text-sm">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="text-xs font-semibold uppercase text-muted-foreground">
-            {log.logType} log
-          </span>
-        </div>
-        {log.todoId ? (
-          <Badge variant="outline" className="text-[11px]">
-            {log.todoId}
+    <div className="my-3 flex flex-col gap-2 rounded-md border border-muted bg-muted/30 px-3 py-2">
+      <div className="flex items-center gap-2">
+        {icon}
+        <span className="text-xs font-semibold text-foreground uppercase">
+          {log.logType}
+        </span>
+        {badge ? (
+          <Badge variant={badge.tone} className="text-[10px] uppercase">
+            {badge.label}
           </Badge>
         ) : null}
       </div>
-      <p className="whitespace-pre-wrap text-xs text-muted-foreground">{log.content}</p>
+      <p className="whitespace-pre-wrap text-xs text-muted-foreground">
+        {log.content}
+      </p>
       <PillList items={log.dyadTagRefs} />
     </div>
   );
@@ -357,7 +411,10 @@ export function DyadAgentTodoUpdate({
           </Badge>
         ) : null}
         {badge ? (
-          <Badge variant={badge.tone} className="flex items-center gap-1 text-[11px]">
+          <Badge
+            variant={badge.tone}
+            className="flex items-center gap-1 text-[11px]"
+          >
             {badge.icon}
             {badge.label}
           </Badge>
@@ -376,11 +433,17 @@ const statusLabelMap: Record<string, { label: string; icon: ReactNode }> = {
   analysis: { label: "Analyzing", icon: <Compass className="h-4 w-4" /> },
   plan_ready: { label: "Plan ready", icon: <ListChecks className="h-4 w-4" /> },
   executing: { label: "Executing", icon: <PlayCircle className="h-4 w-4" /> },
-  awaiting_user: { label: "Awaiting review", icon: <PauseCircle className="h-4 w-4" /> },
+  awaiting_user: {
+    label: "Awaiting review",
+    icon: <PauseCircle className="h-4 w-4" />,
+  },
   reviewing: { label: "Reviewing", icon: <ShieldCheck className="h-4 w-4" /> },
   revising: { label: "Revising", icon: <ShieldHalf className="h-4 w-4" /> },
   completed: { label: "Completed", icon: <CheckCircle2 className="h-4 w-4" /> },
-  error: { label: "Attention needed", icon: <AlertTriangle className="h-4 w-4" /> },
+  error: {
+    label: "Attention needed",
+    icon: <AlertTriangle className="h-4 w-4" />,
+  },
 };
 
 export function DyadAgentStatus({
@@ -388,7 +451,11 @@ export function DyadAgentStatus({
 }: {
   attributes: Record<string, string>;
 }) {
-  const state = (attributes.state ?? attributes.value ?? "updated").toLowerCase();
+  const state = (
+    attributes.state ??
+    attributes.value ??
+    "updated"
+  ).toLowerCase();
   const info = statusLabelMap[state];
 
   return (
@@ -401,19 +468,29 @@ export function DyadAgentStatus({
   );
 }
 
-export function DyadAgentFocus({ attributes }: { attributes: Record<string, string> }) {
+export function DyadAgentFocus({
+  attributes,
+}: {
+  attributes: Record<string, string>;
+}) {
   const todoId = attributes.todoid ?? attributes.todoId ?? "";
   const note = attributes.note ?? attributes.reason ?? "";
   return (
     <div className="my-3 flex items-center gap-2 rounded-md border border-purple-300/60 bg-purple-500/5 px-3 py-2 text-xs">
       <Sparkles className="h-4 w-4 text-purple-500" />
-      <span className="font-semibold text-foreground">Focus shifted to {todoId}</span>
+      <span className="font-semibold text-foreground">
+        Focus shifted to {todoId}
+      </span>
       {note ? <span className="text-muted-foreground">? {note}</span> : null}
     </div>
   );
 }
 
-export function DyadAgentAuto({ attributes }: { attributes: Record<string, string> }) {
+export function DyadAgentAuto({
+  attributes,
+}: {
+  attributes: Record<string, string>;
+}) {
   const enabledRaw = attributes.enabled ?? attributes.value ?? "false";
   const enabled = /^(true|1|yes)$/i.test(enabledRaw);
   return (
@@ -426,14 +503,31 @@ export function DyadAgentAuto({ attributes }: { attributes: Record<string, strin
   );
 }
 
+export function DyadAgentEnforcement({
+  blocked = false,
+  reason,
+}: {
+  blocked?: boolean;
+  reason?: string;
+}) {
+  if (!blocked) return null;
 
-
-
-
-
-
-
-
-
-
-
+  return (
+    <div className="flex items-start gap-3 rounded border border-orange-200 bg-orange-50 p-3 text-sm">
+      <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-600" />
+      <div className="flex-1">
+        <span className="font-semibold text-orange-800">
+          Multiple TODO Attempt Blocked
+        </span>
+        <p className="mt-1 text-orange-700">
+          {reason ||
+            "The agent tried to work on multiple TODOs in one response. Only one task can be completed at a time to maintain human-like workflow."}
+        </p>
+        <div className="mt-2 flex items-center gap-1 text-xs text-orange-600">
+          <Shield className="h-3 w-3" />
+          <span>Human-like workflow enforced</span>
+        </div>
+      </div>
+    </div>
+  );
+}
