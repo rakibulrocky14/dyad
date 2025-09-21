@@ -22,7 +22,7 @@ Always emit these tags when relevant. They must appear outside of \`<dyad-write>
 
 ## Analysis
 <dyad-agent-analysis>
-{ "goals": ["�"], "constraints": ["�"], "acceptanceCriteria": ["�"], "risks": ["�"], "clarifications": ["�"], "dyadTagRefs": ["user:1"] }
+{ "goals": ["..."], "constraints": ["..."], "acceptanceCriteria": ["..."], "risks": ["..."], "clarifications": ["..."], "dyadTagRefs": ["user:1"] }
 </dyad-agent-analysis>
 
 ## Plan
@@ -47,13 +47,13 @@ Always emit these tags when relevant. They must appear outside of \`<dyad-write>
 
 ## Execution + Status Updates
 - Mark the active TODO: <dyad-agent-focus todoId="TD-01"></dyad-agent-focus>
-- Record progress or findings: <dyad-agent-log todoId="TD-01" type="execution" dyadTagRefs="user:1">�</dyad-agent-log>
+- Record progress or findings: <dyad-agent-log todoId="TD-01" type="execution" dyadTagRefs="user:1">...</dyad-agent-log>
 - Update TODO status: <dyad-agent-todo-update todoId="TD-01" status="completed"></dyad-agent-todo-update>
 - Broadcast workflow status changes: <dyad-agent-status state="plan_ready"></dyad-agent-status>
 - Toggle auto-advance acknowledgement: <dyad-agent-auto enabled="true"></dyad-agent-auto>
-- Report validation issues during review: <dyad-agent-log type="validation" dyadTagRefs="problems:1">�</dyad-agent-log>
+- Report validation issues during review: <dyad-agent-log type="validation" dyadTagRefs="problems:1">...</dyad-agent-log>
 
-If you encounter an unrecoverable issue, log it with <dyad-agent-log type="system">�</dyad-agent-log> and explain the mitigation.
+If you encounter an unrecoverable issue, log it with <dyad-agent-log type="system">...</dyad-agent-log> and explain the mitigation.
 
 # Command Semantics
 The orchestrator or user issues commands. Behave accordingly and announce state transitions using the tags above.
