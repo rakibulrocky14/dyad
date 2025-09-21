@@ -242,7 +242,7 @@ const statusBadgeMap: Record<
   },
 };
 
-function TodoRow({ todo }: { todo: AgentPlanTodo }) {
+function TodoRow({ todo, index }: { todo: AgentPlanTodo; index: number }) {
   const status = todo.status?.toLowerCase?.() ?? "pending";
   const badge = statusBadgeMap[status];
 
@@ -250,7 +250,9 @@ function TodoRow({ todo }: { todo: AgentPlanTodo }) {
     <div className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
       <div className="flex items-center gap-2 text-sm font-medium text-foreground flex-1 min-w-0">
         <CircleDot className="h-4 w-4 text-blue-500" />
-        <span className="whitespace-normal break-words">{todo.title}</span>
+        <span className="whitespace-normal break-words">
+          {index}. {todo.title}
+        </span>
       </div>
       {badge ? (
         <Badge variant={badge.tone} className="text-[10px] uppercase">
@@ -291,7 +293,9 @@ export function DyadAgentPlan({
       </div>
       <div className="space-y-2">
         {todos.length ? (
-          todos.map((todo) => <TodoRow key={todo.todoId} todo={todo} />)
+          todos.map((todo, index) => (
+            <TodoRow key={todo.todoId} todo={todo} index={index + 1} />
+          ))
         ) : (
           <p className="text-xs text-muted-foreground">
             Plan details will appear here once generated.

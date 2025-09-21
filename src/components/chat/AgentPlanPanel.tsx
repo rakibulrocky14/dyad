@@ -52,11 +52,13 @@ function TodoRow({
   title,
   status,
   isActive,
+  index,
 }: {
   todoId: string;
   title: string;
   status?: string | null;
   isActive: boolean;
+  index: number;
 }) {
   const normalized = status?.toLowerCase?.() ?? "pending";
   const meta = TODO_STATUS_META[normalized] ?? TODO_STATUS_META.pending;
@@ -74,7 +76,9 @@ function TodoRow({
         ) : (
           <Circle className="h-4 w-4 text-muted-foreground" />
         )}
-        <span className="whitespace-normal break-words">{title}</span>
+        <span className="whitespace-normal break-words">
+          <strong>{index}.</strong> {title}
+        </span>
       </div>
       <Badge
         variant={isActive ? "outline" : meta.badge}
@@ -188,13 +192,14 @@ export function AgentPlanPanel({ chatId }: { chatId?: number }) {
       <ScrollArea className="mt-3 max-h-56">
         <ul className="flex flex-col gap-2">
           {workflow?.todos?.length ? (
-            workflow.todos.map((todo) => (
+            workflow.todos.map((todo, index) => (
               <TodoRow
                 key={todo.todoId}
                 todoId={todo.todoId}
                 title={todo.title}
                 status={todo.status}
                 isActive={workflow.currentTodoId === todo.todoId}
+                index={index + 1}
               />
             ))
           ) : (
