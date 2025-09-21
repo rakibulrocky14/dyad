@@ -1,13 +1,13 @@
 import type React from "react";
 import type { Message } from "@/ipc/ipc_types";
-import { forwardRef, useState } from "react";
+import { forwardRef, useMemo, useState } from "react";
 import ChatMessage from "./ChatMessage";
 import { OpenRouterSetupBanner, SetupBanner } from "../SetupBanner";
 
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Loader2, RefreshCw, Undo } from "lucide-react";
+import { Loader2, RefreshCw, Undo, Play, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useVersions } from "@/hooks/useVersions";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
@@ -34,8 +34,46 @@ export const MessagesList = forwardRef<HTMLDivElement, MessagesListProps>(
     const setMessages = useSetAtom(chatMessagesAtom);
     const [isUndoLoading, setIsUndoLoading] = useState(false);
     const [isRetryLoading, setIsRetryLoading] = useState(false);
+    const [isStartLoading, setIsStartLoading] = useState(false);
+    const [isContinueLoading, setIsContinueLoading] = useState(false);
     const selectedChatId = useAtomValue(selectedChatIdAtom);
     const { userBudget } = useUserBudgetInfo();
+
+    // Helpers to detect agent plan/status in the last assistant message
+    const assistantContents = useMemo(
+      () =>
+        [...messages]
+          .reverse()
+          .filter((m) => m?.role === "assistant")
+          .map((m) => m?.content || ""),
+      [messages],
+    );
+
+    const lastContent = assistantContents[0] || "";
+    const lastHasPlan = /<dyad-agent-plan[\s>]/i.test(lastContent);
+    const statusMatches = [
+      ...lastContent.matchAll(
+        /<dyad-agent-status[^>]*(?:state|value)=(?:\"([^\"]+)\"|'([^']+)'|([^\s>]+))/gi,
+      ),
+    ];
+    const lastStatusMatch = statusMatches.at(-1);
+    const lastStatus = (lastStatusMatch?.[1] ||
+      lastStatusMatch?.[2] ||
+      lastStatusMatch?.[3] ||
+      "")
+      .toLowerCase()
+      .trim();
+    const lastHasCompletedTodoUpdate = /<dyad-agent-todo-update[^>]*status=(?:\"completed\"|'completed'|completed)/i.test(
+      lastContent,
+    );
+
+    const shouldShowStart =
+      !isStreaming && lastHasPlan && lastStatus !== "completed";
+    const shouldShowContinue =
+      !isStreaming &&
+      (lastStatus === "awaiting_user" || lastHasCompletedTodoUpdate) &&
+      lastStatus !== "completed" &&
+      !lastHasPlan;
 
     const renderSetupBanner = () => {
       const selectedModel = settings?.selectedModel;
@@ -74,7 +112,7 @@ export const MessagesList = forwardRef<HTMLDivElement, MessagesListProps>(
               </div>
             )}
         {!isStreaming && (
-          <div className="flex max-w-3xl mx-auto gap-2">
+          <div className="flex max-w-3xl mx-auto gap-2 items-center">
             {!!messages.length &&
               messages[messages.length - 1].role === "assistant" &&
               messages[messages.length - 1].commitHash && (
@@ -232,6 +270,67 @@ export const MessagesList = forwardRef<HTMLDivElement, MessagesListProps>(
                 Retry
               </Button>
             )}
+            {/* Right-aligned Start/Continue controls */}
+            <div className="flex gap-2 ml-auto">
+              {shouldShowStart && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  disabled={isStartLoading}
+                  onClick={async () => {
+                    if (!selectedChatId) return;
+                    setIsStartLoading(true);
+                    try {
+                      await streamMessage({
+                        prompt: "Start",
+                        chatId: selectedChatId,
+                      });
+                    } catch (err) {
+                      console.error("Error starting agent:", err);
+                      showError("Failed to start agent");
+                    } finally {
+                      setIsStartLoading(false);
+                    }
+                  }}
+                >
+                  {isStartLoading ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <Play size={16} />
+                  )}
+                  Start
+                </Button>
+              )}
+              {shouldShowContinue && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  disabled={isContinueLoading}
+                  onClick={async () => {
+                    if (!selectedChatId) return;
+                    setIsContinueLoading(true);
+                    try {
+                      await streamMessage({
+                        prompt: "Continue",
+                        chatId: selectedChatId,
+                      });
+                    } catch (err) {
+                      console.error("Error continuing agent:", err);
+                      showError("Failed to continue");
+                    } finally {
+                      setIsContinueLoading(false);
+                    }
+                  }}
+                >
+                  {isContinueLoading ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <ChevronsRight size={16} />
+                  )}
+                  Continue
+                </Button>
+              )}
+            </div>
           </div>
         )}
 

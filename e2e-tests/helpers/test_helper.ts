@@ -659,6 +659,26 @@ export class PageObject {
     return this.page.getByRole("button", { name: "Undo" });
   }
 
+  async clickStart() {
+    await this.getStartButton().click();
+  }
+
+  async clickContinue() {
+    await this.getContinueButton().click();
+  }
+
+  getStartButton() {
+    return this.page
+      .getByTestId("messages-list")
+      .getByRole("button", { name: "Start", exact: true });
+  }
+
+  getContinueButton() {
+    return this.page
+      .getByTestId("messages-list")
+      .getByRole("button", { name: "Continue", exact: true });
+  }
+
   getHomeChatInputContainer() {
     return this.page.getByTestId("home-chat-input-container");
   }

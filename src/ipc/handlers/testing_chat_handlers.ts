@@ -40,6 +40,23 @@ const TEST_RESPONSES: Record<string, string> = {
 <dyad-agent-auto enabled="true"></dyad-agent-auto>
 
 EOM`,
+  "agent-awaiting": `Completed the first task; awaiting your confirmation to proceed.
+
+<dyad-agent-todo-update todoId="TD-01" status="completed"></dyad-agent-todo-update>
+<dyad-agent-status state="awaiting_user"></dyad-agent-status>
+
+EOM`,
+  "agent-completed": `All tasks completed successfully.
+
+<dyad-agent-status value="Completed"></dyad-agent-status>
+<dyad-agent-log type="execution">Workflow completed successfully.</dyad-agent-log>
+
+EOM`,
+  "agent-todo-complete-only": `I finished the first task.
+
+<dyad-agent-todo-update todoId="TD-01" status="completed"></dyad-agent-todo-update>
+
+EOM`,
   write: `Hello world
   <dyad-write path="src/hello.ts" content="Hello world">
   console.log("Hello world");

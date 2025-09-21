@@ -190,9 +190,15 @@ function preprocessUnclosedTags(content: string): {
 /**
  * Parse the content to extract custom tags and markdown sections into a unified array
  */
+function stripClosingTags(text: string): string {
+  return text
+    .replace(/<\\\/dyad-[^>]+>/gi, '')
+    .replace(/<\\\/dyad-agent-[^>]+>/gi, '');
+}
+
 function parseCustomTags(content: string): ContentPiece[] {
   // Remove any stray closing dyad/agent tags that may leak into markdown
-  content = content.replace(/<\\\/dyad-[^>]+>/g, '').replace(/<\\\/dyad-agent-[^>]+>/g, '');
+  content = stripClosingTags(content);
   const { processedContent, inProgressTags } = preprocessUnclosedTags(content);
 
   const customTagNames = [
@@ -236,7 +242,9 @@ function parseCustomTags(content: string): ContentPiece[] {
     if (startIndex > lastIndex) {
       contentPieces.push({
         type: "markdown",
-        content: processedContent.substring(lastIndex, startIndex),
+        content: stripClosingTags(
+          processedContent.substring(lastIndex, startIndex),
+        ),
       });
     }
 
@@ -271,7 +279,7 @@ function parseCustomTags(content: string): ContentPiece[] {
   if (lastIndex < processedContent.length) {
     contentPieces.push({
       type: "markdown",
-      content: processedContent.substring(lastIndex),
+      content: stripClosingTags(processedContent.substring(lastIndex)),
     });
   }
 
