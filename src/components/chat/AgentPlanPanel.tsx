@@ -48,7 +48,7 @@ const TODO_STATUS_META: Record<
 };
 
 function TodoRow({
-  todoId,
+  todoId: _todoId,
   title,
   status,
   isActive,

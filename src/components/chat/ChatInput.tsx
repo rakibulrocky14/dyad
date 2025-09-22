@@ -120,7 +120,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
   const {
     streamMessage,
     isStreaming,
-    setIsStreaming,
+    setIsStreaming: _setIsStreaming,
     cancelStream,
     error,
     setError,

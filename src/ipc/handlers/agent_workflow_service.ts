@@ -1,5 +1,5 @@
 import log from "electron-log";
-import { sql, eq, and, asc, desc } from "drizzle-orm";
+import { sql, eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import {
   agent_execution_logs,

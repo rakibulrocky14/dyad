@@ -341,7 +341,7 @@ function runAdditionalChecks() {
       readFileSync(fullPath);
       console.log(`✅ ${file} exists`);
       filesExist++;
-    } catch (err) {
+    } catch {
       console.log(`❌ ${file} missing`);
     }
   }
@@ -385,7 +385,7 @@ function runAdditionalChecks() {
         "⚠️  System prompt may need stronger enforcement instructions",
       );
     }
-  } catch (err) {
+  } catch {
     console.log("⚠️  Could not validate system prompt content");
   }
 }

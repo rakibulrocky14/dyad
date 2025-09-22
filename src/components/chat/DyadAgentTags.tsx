@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import {
   Activity,
   AlertCircle,
@@ -9,7 +9,6 @@ import {
   CircleDot,
   ClipboardList,
   Compass,
-  FileText,
   Flag,
   ListChecks,
   PauseCircle,

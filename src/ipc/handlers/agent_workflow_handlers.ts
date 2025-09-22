@@ -1,4 +1,3 @@
-import { ipcMain } from "electron";
 import log from "electron-log";
 import { createLoggedHandler } from "./safe_handle";
 import {

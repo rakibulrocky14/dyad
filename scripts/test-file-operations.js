@@ -319,7 +319,7 @@ async function runTests() {
     log("TEST 3: Agent Behavior Simulation");
     log("=".repeat(50));
 
-    const writtenFiles = await simulateAgentBehavior(testFiles);
+    const _writtenFiles = await simulateAgentBehavior(testFiles);
     const agentResults = verifyAllFiles(testFiles);
 
     // Summary

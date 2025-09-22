@@ -21,9 +21,8 @@ import type {
   AgentTodo,
   AgentTodoUpdate,
   AgentWorkflow,
-  AgentWorkflowStatus,
 } from "@/agents/dayd/types";
-import { AgentCommandSchema, AgentTodoUpdateSchema } from "@/agents/dayd/types";
+import { AgentCommandSchema } from "@/agents/dayd/types";
 import { getAgentConfig } from "@/config/agent-config";
 
 const logger = log.scope("agent-chat-controller");

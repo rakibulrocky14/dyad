@@ -97,7 +97,7 @@ test.describe("Agent One-TODO Enforcement", () => {
     );
 
     // Should not see multiple completions in the same response
-    const completionMatches =
+    const _completionMatches =
       messages?.match(/completed|finished|done/gi) || [];
 
     // Even if agent tried to complete multiple, enforcement should limit it
