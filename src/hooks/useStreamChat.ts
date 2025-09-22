@@ -5,7 +5,11 @@ import type {
   FileAttachment,
 } from "@/ipc/ipc_types";
 import { useAtom, useSetAtom } from "jotai";
-import { agentWorkflowAtom, agentWorkflowErrorAtom, agentWorkflowLoadingAtom } from "@/atoms/agentAtoms";
+import {
+  agentWorkflowAtom,
+  agentWorkflowErrorAtom,
+  agentWorkflowLoadingAtom,
+} from "@/atoms/agentAtoms";
 import {
   chatErrorAtom,
   chatMessagesAtom,
@@ -235,4 +239,3 @@ export function useStreamChat({
     setIsStreaming,
   };
 }
-

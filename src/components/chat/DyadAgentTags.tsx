@@ -127,7 +127,7 @@ function ClarificationsCallout({ items }: { items?: string[] }) {
       <ol className="list-decimal space-y-1 pl-5 text-xs text-foreground">
         {items.map((item, idx) => {
           const trimmed = item.trim();
-          const match = trimmed.match(/^(\d+)[\.)]\s*(.*)$/);
+          const match = trimmed.match(/^(\d+)[.)]\s*(.*)$/);
           const value = match ? Number.parseInt(match[1], 10) : idx + 1;
           const questionText = (match ? match[2] : trimmed).trim();
           const displayText = questionText.length

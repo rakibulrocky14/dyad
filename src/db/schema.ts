@@ -188,9 +188,7 @@ export const agent_workflows = sqliteTable(
       .notNull()
       .default(sql`(unixepoch())`),
   },
-  (table) => [
-    unique("agent_workflows_chat_unique").on(table.chatId),
-  ],
+  (table) => [unique("agent_workflows_chat_unique").on(table.chatId)],
 );
 
 export const agent_todos = sqliteTable(
@@ -218,38 +216,42 @@ export const agent_todos = sqliteTable(
       .default(sql`(unixepoch())`),
   },
   (table) => [
-    unique("agent_todos_workflow_todo_unique").on(table.workflowId, table.todoId),
+    unique("agent_todos_workflow_todo_unique").on(
+      table.workflowId,
+      table.todoId,
+    ),
   ],
 );
 
-export const agent_execution_logs = sqliteTable(
-  "agent_execution_logs",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    workflowId: integer("workflow_id")
-      .notNull()
-      .references(() => agent_workflows.id, { onDelete: "cascade" }),
-    todoId: integer("todo_id")
-      .references(() => agent_todos.id, { onDelete: "cascade" }),
-    todoKey: text("todo_key"),
-    logType: text("log_type").notNull(),
-    content: text("content").notNull(),
-    dyadTagRefs: text("dyad_tag_refs", { mode: "json" }),
-    metadata: text("metadata", { mode: "json" }),
-    createdAt: integer("created_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
-  },
-);
-
-export const agentWorkflowsRelations = relations(agent_workflows, ({ many, one }) => ({
-  chat: one(chats, {
-    fields: [agent_workflows.chatId],
-    references: [chats.id],
+export const agent_execution_logs = sqliteTable("agent_execution_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  workflowId: integer("workflow_id")
+    .notNull()
+    .references(() => agent_workflows.id, { onDelete: "cascade" }),
+  todoId: integer("todo_id").references(() => agent_todos.id, {
+    onDelete: "cascade",
   }),
-  todos: many(agent_todos),
-  logs: many(agent_execution_logs),
-}));
+  todoKey: text("todo_key"),
+  logType: text("log_type").notNull(),
+  content: text("content").notNull(),
+  dyadTagRefs: text("dyad_tag_refs", { mode: "json" }),
+  metadata: text("metadata", { mode: "json" }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
+export const agentWorkflowsRelations = relations(
+  agent_workflows,
+  ({ many, one }) => ({
+    chat: one(chats, {
+      fields: [agent_workflows.chatId],
+      references: [chats.id],
+    }),
+    todos: many(agent_todos),
+    logs: many(agent_execution_logs),
+  }),
+);
 
 export const agentTodosRelations = relations(agent_todos, ({ many, one }) => ({
   workflow: one(agent_workflows, {

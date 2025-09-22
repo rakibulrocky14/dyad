@@ -5,6 +5,7 @@
 **Issue**: When the agent processes multiple TODOs and generates multiple files, only the last file gets saved to disk, even though all files appear correctly in the chat interface.
 
 **Symptoms**:
+
 - Agent generates complete code for multiple files in chat
 - All `<dyad-write>` tags appear correctly in the response
 - Only the final file from the response is actually written to disk
@@ -45,6 +46,7 @@ node scripts/test-file-operations.js
 ```
 
 This will test:
+
 - Synchronous file writing (like the current system)
 - Concurrent file writing
 - Agent behavior simulation
@@ -60,7 +62,9 @@ Add temporary debug logging to see what's happening:
 ```javascript
 console.log(`[DEBUG] Found ${dyadWriteTags.length} dyad-write tags:`);
 dyadWriteTags.forEach((tag, index) => {
-  console.log(`[DEBUG] Tag ${index + 1}: ${tag.path} (${tag.content.length} chars)`);
+  console.log(
+    `[DEBUG] Tag ${index + 1}: ${tag.path} (${tag.content.length} chars)`,
+  );
 });
 ```
 
@@ -115,7 +119,7 @@ In `response_processor.ts`, replace the file writing section with:
 try {
   fs.writeFileSync(fullFilePath, content);
   logger.log(`Successfully wrote file: ${fullFilePath}`);
-  
+
   // Verify the file was actually written
   if (fs.existsSync(fullFilePath)) {
     const writtenSize = fs.statSync(fullFilePath).size;
@@ -123,7 +127,7 @@ try {
   } else {
     logger.error(`File write failed - file does not exist: ${fullFilePath}`);
   }
-  
+
   writtenFiles.push(filePath);
 } catch (writeError) {
   logger.error(`Failed to write file: ${fullFilePath}`, writeError);
@@ -140,7 +144,7 @@ Add a small delay between file operations:
 
 ```javascript
 // Add after each file write
-await new Promise(resolve => setTimeout(resolve, 10)); // 10ms delay
+await new Promise((resolve) => setTimeout(resolve, 10)); // 10ms delay
 ```
 
 ### Fix 3: Switch to Asynchronous Operations
@@ -178,6 +182,7 @@ Look for these patterns in the logs:
 ### File System Monitoring
 
 Use Windows Resource Monitor to watch:
+
 - File handles being created/released
 - Disk activity during agent execution
 - Any permission errors

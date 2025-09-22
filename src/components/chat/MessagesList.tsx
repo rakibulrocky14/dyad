@@ -53,19 +53,22 @@ export const MessagesList = forwardRef<HTMLDivElement, MessagesListProps>(
     const lastHasPlan = /<dyad-agent-plan[\s>]/i.test(lastContent);
     const statusMatches = [
       ...lastContent.matchAll(
-        /<dyad-agent-status[^>]*(?:state|value)=(?:\"([^\"]+)\"|'([^']+)'|([^\s>]+))/gi,
+        /<dyad-agent-status[^>]*(?:state|value)=(?:"([^"]+)"|'([^']+)'|([^\s>]+))/gi,
       ),
     ];
     const lastStatusMatch = statusMatches.at(-1);
-    const lastStatus = (lastStatusMatch?.[1] ||
+    const lastStatus = (
+      lastStatusMatch?.[1] ||
       lastStatusMatch?.[2] ||
       lastStatusMatch?.[3] ||
-      "")
+      ""
+    )
       .toLowerCase()
       .trim();
-    const lastHasCompletedTodoUpdate = /<dyad-agent-todo-update[^>]*status=(?:\"completed\"|'completed'|completed)/i.test(
-      lastContent,
-    );
+    const lastHasCompletedTodoUpdate =
+      /<dyad-agent-todo-update[^>]*status=(?:"completed"|'completed'|completed)/i.test(
+        lastContent,
+      );
 
     const shouldShowStart =
       !isStreaming && lastHasPlan && lastStatus !== "completed";

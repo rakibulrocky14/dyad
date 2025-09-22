@@ -59,17 +59,17 @@ export function useAgentWorkflow(chatId?: number) {
       if (typeof chatId !== "number") return null;
       setIsLoading(true);
       try {
-        const updated =
-          await IpcClient.getInstance().setAgentAutoAdvance(chatId, enabled);
+        const updated = await IpcClient.getInstance().setAgentAutoAdvance(
+          chatId,
+          enabled,
+        );
         setWorkflow(updated);
         setError(null);
         return updated;
       } catch (err) {
         console.error("Failed to update auto-advance", err);
         setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to update auto-advance",
+          err instanceof Error ? err.message : "Failed to update auto-advance",
         );
         return null;
       } finally {

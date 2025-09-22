@@ -192,8 +192,8 @@ function preprocessUnclosedTags(content: string): {
  */
 function stripClosingTags(text: string): string {
   return text
-    .replace(/<\\\/dyad-[^>]+>/gi, '')
-    .replace(/<\\\/dyad-agent-[^>]+>/gi, '');
+    .replace(/<\\\/dyad-[^>]+>/gi, "")
+    .replace(/<\\\/dyad-agent-[^>]+>/gi, "");
 }
 
 function parseCustomTags(content: string): ContentPiece[] {
@@ -476,6 +476,3 @@ function renderCustomTag(
       return null;
   }
 }
-
-
-

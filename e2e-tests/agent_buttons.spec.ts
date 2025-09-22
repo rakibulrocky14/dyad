@@ -5,7 +5,9 @@ const PLAN_PROMPT = `[dyad-qa=agent-plan] bootstrap agent response`;
 const AWAITING_PROMPT = `[dyad-qa=agent-awaiting] show awaiting user`;
 const COMPLETED_PROMPT = `[dyad-qa=agent-completed] finish flow`;
 
-test("agent Start and Continue buttons appear with correct states", async ({ po }) => {
+test("agent Start and Continue buttons appear with correct states", async ({
+  po,
+}) => {
   await po.setUp({ autoApprove: true });
   await po.importApp("minimal");
 

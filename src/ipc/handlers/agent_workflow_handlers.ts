@@ -12,14 +12,17 @@ const logger = log.scope("agent-workflow-handlers");
 const handle = createLoggedHandler(logger);
 
 export function registerAgentWorkflowHandlers() {
-  handle("agent:get-workflow", async (_event, { chatId }: { chatId: number }) => {
-    const workflowRow = await ensureAgentWorkflow(chatId);
-    const workflow = await getAgentWorkflowById(workflowRow.id);
-    if (!workflow) {
-      throw new Error(`Agent workflow not found for chat ${chatId}`);
-    }
-    return workflow;
-  });
+  handle(
+    "agent:get-workflow",
+    async (_event, { chatId }: { chatId: number }) => {
+      const workflowRow = await ensureAgentWorkflow(chatId);
+      const workflow = await getAgentWorkflowById(workflowRow.id);
+      if (!workflow) {
+        throw new Error(`Agent workflow not found for chat ${chatId}`);
+      }
+      return workflow;
+    },
+  );
 
   handle(
     "agent:set-auto-advance",

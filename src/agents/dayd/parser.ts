@@ -31,7 +31,8 @@ export interface AgentParsedArtifacts {
   warnings: string[];
 }
 
-const NESTED_TAG_REGEX = /<dyad-agent-([a-z-]+)([^>]*)>([\s\S]*?)<\/dyad-agent-\1>/gi;
+const NESTED_TAG_REGEX =
+  /<dyad-agent-([a-z-]+)([^>]*)>([\s\S]*?)<\/dyad-agent-\1>/gi;
 const SELF_CLOSING_REGEX = /<dyad-agent-([a-z-]+)([^>]*)\/>/gi;
 
 function parseAttributes(raw: string): Record<string, string> {
@@ -89,14 +90,24 @@ export function parseAgentArtifacts(content: string): AgentParsedArtifacts {
   ) => {
     switch (tagName) {
       case "analysis": {
-        const parsed = parseJsonContent(body, warnings, "analysis", AgentAnalysisSchema);
+        const parsed = parseJsonContent(
+          body,
+          warnings,
+          "analysis",
+          AgentAnalysisSchema,
+        );
         if (parsed) {
           analysis = parsed;
         }
         break;
       }
       case "plan": {
-        const parsed = parseJsonContent(body, warnings, "plan", AgentPlanSchema);
+        const parsed = parseJsonContent(
+          body,
+          warnings,
+          "plan",
+          AgentPlanSchema,
+        );
         if (parsed) {
           plan = parsed;
           if (attrs.version) {
@@ -106,7 +117,10 @@ export function parseAgentArtifacts(content: string): AgentParsedArtifacts {
             }
           }
           if (!plan.dyadTagRefs) {
-            plan = { ...plan, dyadTagRefs: parseDyadTagRefs(attrs.dyadTagRefs) ?? [] };
+            plan = {
+              ...plan,
+              dyadTagRefs: parseDyadTagRefs(attrs.dyadTagRefs) ?? [],
+            };
           }
           if (!plan.dyadTagContext) {
             plan = {
@@ -127,7 +141,9 @@ export function parseAgentArtifacts(content: string): AgentParsedArtifacts {
         if (todoUpdate.success) {
           todoUpdates.push(todoUpdate.data);
         } else {
-          warnings.push(`Invalid todo update payload: ${todoUpdate.error.message}`);
+          warnings.push(
+            `Invalid todo update payload: ${todoUpdate.error.message}`,
+          );
         }
         break;
       }
@@ -165,7 +181,9 @@ export function parseAgentArtifacts(content: string): AgentParsedArtifacts {
         if (statusResult.success) {
           workflowStatus = statusResult.data;
         } else {
-          warnings.push(`Invalid workflow status value: ${attrs.state ?? body}`);
+          warnings.push(
+            `Invalid workflow status value: ${attrs.state ?? body}`,
+          );
         }
         break;
       }

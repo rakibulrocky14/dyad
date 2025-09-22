@@ -113,7 +113,9 @@ function mapWorkflowRows({
     .map((todo) => ({ ...todo, logs: [] }));
 
   const mappedLogs = logs
-    .sort((a, b) => (a.createdAt?.valueOf() ?? 0) - (b.createdAt?.valueOf() ?? 0))
+    .sort(
+      (a, b) => (a.createdAt?.valueOf() ?? 0) - (b.createdAt?.valueOf() ?? 0),
+    )
     .map(mapLogRow);
 
   const todoLogsMap = new Map<number, AgentExecutionLog[]>();
@@ -154,7 +156,9 @@ function mapWorkflowRows({
   return agentWorkflow;
 }
 
-async function loadWorkflowWithDetails(workflowId: number): Promise<WorkflowWithDetails | null> {
+async function loadWorkflowWithDetails(
+  workflowId: number,
+): Promise<WorkflowWithDetails | null> {
   const workflow = await db.query.agent_workflows.findFirst({
     where: eq(agent_workflows.id, workflowId),
   });
@@ -172,7 +176,9 @@ async function loadWorkflowWithDetails(workflowId: number): Promise<WorkflowWith
   return { workflow, todos, logs };
 }
 
-export async function ensureAgentWorkflow(chatId: number): Promise<AgentWorkflowRow> {
+export async function ensureAgentWorkflow(
+  chatId: number,
+): Promise<AgentWorkflowRow> {
   const existing = await db.query.agent_workflows.findFirst({
     where: eq(agent_workflows.chatId, chatId),
   });
@@ -322,7 +328,9 @@ export async function applyAgentTodoUpdates(
   updates: AgentTodoUpdate[],
 ): Promise<void> {
   if (!updates.length) return;
-  const parsedUpdates = updates.map((update) => AgentTodoUpdateSchema.parse(update));
+  const parsedUpdates = updates.map((update) =>
+    AgentTodoUpdateSchema.parse(update),
+  );
   await db.transaction(async (tx) => {
     for (const update of parsedUpdates) {
       const todoRow = await tx.query.agent_todos.findFirst({
@@ -408,7 +416,9 @@ export async function removeAgentWorkflowData(chatId: number): Promise<void> {
   });
   if (!workflow) return;
   await db.transaction(async (tx) => {
-    await tx.delete(agent_execution_logs).where(eq(agent_execution_logs.workflowId, workflow.id));
+    await tx
+      .delete(agent_execution_logs)
+      .where(eq(agent_execution_logs.workflowId, workflow.id));
     await tx.delete(agent_todos).where(eq(agent_todos.workflowId, workflow.id));
     await tx.delete(agent_workflows).where(eq(agent_workflows.id, workflow.id));
   });

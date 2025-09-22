@@ -142,7 +142,9 @@ export function validateAgentConfig(config: AgentWorkflowConfig): string[] {
   }
 
   if (config.enforceOneTodoPerResponse && config.maxSimultaneousTodos > 1) {
-    errors.push("enforceOneTodoPerResponse conflicts with maxSimultaneousTodos > 1");
+    errors.push(
+      "enforceOneTodoPerResponse conflicts with maxSimultaneousTodos > 1",
+    );
   }
 
   return errors;

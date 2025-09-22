@@ -18,7 +18,8 @@ import git from "isomorphic-git";
 import { db } from "../db";
 import { cleanFullResponse } from "@/ipc/utils/cleanFullResponse";
 
-const joinAppPath = (...segments: string[]) => path.join("/mock/user/data/path/mock-app-path", ...segments);
+const joinAppPath = (...segments: string[]) =>
+  path.join("/mock/user/data/path/mock-app-path", ...segments);
 
 // Mock fs with default export
 vi.mock("node:fs", async () => {
@@ -698,10 +699,9 @@ describe("processFullResponse", () => {
       messageId: 1,
     });
 
-    expect(fs.mkdirSync).toHaveBeenCalledWith(
-      joinAppPath("src"),
-      { recursive: true },
-    );
+    expect(fs.mkdirSync).toHaveBeenCalledWith(joinAppPath("src"), {
+      recursive: true,
+    });
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       joinAppPath("src", "file1.js"),
       "console.log('Hello');",
@@ -755,14 +755,12 @@ describe("processFullResponse", () => {
     });
 
     // Check that directories were created for each file path
-    expect(fs.mkdirSync).toHaveBeenCalledWith(
-      joinAppPath("src"),
-      { recursive: true },
-    );
-    expect(fs.mkdirSync).toHaveBeenCalledWith(
-      joinAppPath("src", "utils"),
-      { recursive: true },
-    );
+    expect(fs.mkdirSync).toHaveBeenCalledWith(joinAppPath("src"), {
+      recursive: true,
+    });
+    expect(fs.mkdirSync).toHaveBeenCalledWith(joinAppPath("src", "utils"), {
+      recursive: true,
+    });
     expect(fs.mkdirSync).toHaveBeenCalledWith(
       joinAppPath("src", "components"),
       { recursive: true },
@@ -1209,4 +1207,3 @@ Some text after the unclosed tag`;
     expect(result).toBe(false);
   });
 });
-

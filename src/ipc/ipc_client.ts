@@ -462,7 +462,10 @@ export class IpcClient {
     chatId: number,
     enabled: boolean,
   ): Promise<AgentWorkflow> {
-    return this.ipcRenderer.invoke("agent:set-auto-advance", { chatId, enabled });
+    return this.ipcRenderer.invoke("agent:set-auto-advance", {
+      chatId,
+      enabled,
+    });
   }
 
   // Open an external URL using the default browser

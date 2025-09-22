@@ -72,7 +72,6 @@ import { SelectedComponentDisplay } from "./SelectedComponentDisplay";
 import { useCheckProblems } from "@/hooks/useCheckProblems";
 import { LexicalChatInput } from "./LexicalChatInput";
 
-
 const AGENT_STATUS_LABELS: Record<string, string> = {
   idle: "Idle",
   analysis: "Analyzing",
@@ -107,17 +106,25 @@ export function ChatInput({ chatId }: { chatId?: number }) {
   }, [agentWorkflow]);
   const activeTodo = useMemo(() => {
     if (!agentWorkflow?.todos) return null;
-    return agentWorkflow.todos.find(
-      (todo) => todo.todoId === agentWorkflow.currentTodoId,
-    ) ?? null;
+    return (
+      agentWorkflow.todos.find(
+        (todo) => todo.todoId === agentWorkflow.currentTodoId,
+      ) ?? null
+    );
   }, [agentWorkflow]);
   const statusLabel = agentWorkflow
-    ? AGENT_STATUS_LABELS[agentWorkflow.status] ?? agentWorkflow.status
+    ? (AGENT_STATUS_LABELS[agentWorkflow.status] ?? agentWorkflow.status)
     : "Awaiting plan";
   const appId = useAtomValue(selectedAppIdAtom);
   const { refreshVersions } = useVersions(appId);
-  const { streamMessage, isStreaming, setIsStreaming, cancelStream, error, setError } =
-    useStreamChat();
+  const {
+    streamMessage,
+    isStreaming,
+    setIsStreaming,
+    cancelStream,
+    error,
+    setError,
+  } = useStreamChat();
   const [showError, setShowError] = useState(true);
   const [isApproving, setIsApproving] = useState(false); // State for approving
   const [isRejecting, setIsRejecting] = useState(false); // State for rejecting
@@ -395,11 +402,12 @@ export function ChatInput({ chatId }: { chatId?: number }) {
                     !hasPendingTodos
                   }
                 >
-                  {(agentCommandBusy || isStreaming) ? (
+                  {agentCommandBusy || isStreaming ? (
                     <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   ) : (
                     <PlayCircle className="mr-1 h-3 w-3" />
-                  )} Start
+                  )}{" "}
+                  Start
                 </Button>
                 <Button
                   variant="outline"
@@ -412,11 +420,12 @@ export function ChatInput({ chatId }: { chatId?: number }) {
                     !hasPendingTodos
                   }
                 >
-                  {(agentCommandBusy || isStreaming) ? (
+                  {agentCommandBusy || isStreaming ? (
                     <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   ) : (
                     <FastForward className="mr-1 h-3 w-3" />
-                  )} Continue
+                  )}{" "}
+                  Continue
                 </Button>
                 <Button
                   variant="ghost"
@@ -428,14 +437,17 @@ export function ChatInput({ chatId }: { chatId?: number }) {
                     <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   ) : (
                     <RefreshCcw className="mr-1 h-3 w-3" />
-                  )} Change plan
+                  )}{" "}
+                  Change plan
                 </Button>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <span className="font-medium uppercase">Active</span>
                   <span className="font-semibold text-foreground max-w-[280px] truncate">
-                    {activeTodo ? `${activeTodo.todoId} - ${activeTodo.title}` : "None"}
+                    {activeTodo
+                      ? `${activeTodo.todoId} - ${activeTodo.title}`
+                      : "None"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -454,7 +466,9 @@ export function ChatInput({ chatId }: { chatId?: number }) {
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
                 <span className="font-medium uppercase">Status</span>
-                <span className="font-semibold text-foreground">{statusLabel}</span>
+                <span className="font-semibold text-foreground">
+                  {statusLabel}
+                </span>
               </div>
             </div>
           )}

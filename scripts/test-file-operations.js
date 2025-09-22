@@ -7,12 +7,12 @@
  * to verify that multiple files can be written successfully without interference.
  */
 
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
 
 // Create a temporary test directory
-const testDir = path.join(os.tmpdir(), 'dyad-file-test-' + Date.now());
+const testDir = path.join(os.tmpdir(), "dyad-file-test-" + Date.now());
 
 function log(message) {
   console.log(`[${new Date().toISOString()}] ${message}`);
@@ -21,7 +21,7 @@ function log(message) {
 function createTestFiles() {
   const testFiles = [
     {
-      path: 'src/components/TodoItem.tsx',
+      path: "src/components/TodoItem.tsx",
       content: `import React from 'react';
 
 interface TodoItemProps {
@@ -38,10 +38,10 @@ export function TodoItem({ id, text, completed }: TodoItemProps) {
     </div>
   );
 }
-`
+`,
     },
     {
-      path: 'src/components/TodoList.tsx',
+      path: "src/components/TodoList.tsx",
       content: `import React from 'react';
 import { TodoItem } from './TodoItem';
 
@@ -64,10 +64,10 @@ export function TodoList({ todos }: TodoListProps) {
     </div>
   );
 }
-`
+`,
     },
     {
-      path: 'src/styles/todos.css',
+      path: "src/styles/todos.css",
       content: `.todo-item {
   display: flex;
   align-items: center;
@@ -86,10 +86,10 @@ export function TodoList({ todos }: TodoListProps) {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-`
+`,
     },
     {
-      path: 'src/hooks/useTodos.ts',
+      path: "src/hooks/useTodos.ts",
       content: `import { useState, useCallback } from 'react';
 
 interface Todo {
@@ -124,15 +124,15 @@ export function useTodos() {
 
   return { todos, addTodo, toggleTodo, deleteTodo };
 }
-`
-    }
+`,
+    },
   ];
 
   return testFiles;
 }
 
 async function writeFilesSynchronously(files) {
-  log('Testing synchronous file writing...');
+  log("Testing synchronous file writing...");
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
@@ -149,14 +149,16 @@ async function writeFilesSynchronously(files) {
 
     // Verify immediately
     if (fs.existsSync(fullPath)) {
-      const writtenContent = fs.readFileSync(fullPath, 'utf8');
+      const writtenContent = fs.readFileSync(fullPath, "utf8");
       const expectedSize = file.content.length;
       const actualSize = writtenContent.length;
 
       if (actualSize === expectedSize) {
         log(`✅ File ${file.path} written successfully (${actualSize} bytes)`);
       } else {
-        log(`❌ File ${file.path} size mismatch. Expected: ${expectedSize}, Got: ${actualSize}`);
+        log(
+          `❌ File ${file.path} size mismatch. Expected: ${expectedSize}, Got: ${actualSize}`,
+        );
       }
     } else {
       log(`❌ File ${file.path} was not created!`);
@@ -165,7 +167,7 @@ async function writeFilesSynchronously(files) {
 }
 
 async function writeFilesConcurrently(files) {
-  log('Testing concurrent file writing...');
+  log("Testing concurrent file writing...");
 
   const promises = files.map(async (file, index) => {
     const fullPath = path.join(testDir, file.path);
@@ -194,7 +196,9 @@ async function writeFilesConcurrently(files) {
       if (actualSize === result.size) {
         log(`✅ Concurrent file ${result.path} verified (${actualSize} bytes)`);
       } else {
-        log(`❌ Concurrent file ${result.path} size mismatch. Expected: ${result.size}, Got: ${actualSize}`);
+        log(
+          `❌ Concurrent file ${result.path} size mismatch. Expected: ${result.size}, Got: ${actualSize}`,
+        );
       }
     } else {
       log(`❌ Concurrent file ${result.path} does not exist!`);
@@ -203,13 +207,13 @@ async function writeFilesConcurrently(files) {
 }
 
 function verifyAllFiles(files) {
-  log('Verifying all files exist and have correct content...');
+  log("Verifying all files exist and have correct content...");
 
   const results = {
     total: files.length,
     found: 0,
     missing: [],
-    corrupted: []
+    corrupted: [],
   };
 
   for (const file of files) {
@@ -218,7 +222,7 @@ function verifyAllFiles(files) {
     if (fs.existsSync(fullPath)) {
       results.found++;
 
-      const writtenContent = fs.readFileSync(fullPath, 'utf8');
+      const writtenContent = fs.readFileSync(fullPath, "utf8");
       if (writtenContent === file.content) {
         log(`✅ ${file.path}: Content matches perfectly`);
       } else {
@@ -235,13 +239,13 @@ function verifyAllFiles(files) {
 }
 
 async function simulateAgentBehavior(files) {
-  log('Simulating agent-like file operations...');
+  log("Simulating agent-like file operations...");
 
   // Simulate the exact sequence that happens in the agent system
-  log('Step 1: Parse dyad-write tags (simulated)');
+  log("Step 1: Parse dyad-write tags (simulated)");
   const dyadWriteTags = files;
 
-  log('Step 2: Process each dyad-write tag in sequence');
+  log("Step 2: Process each dyad-write tag in sequence");
   const writtenFiles = [];
 
   for (const tag of dyadWriteTags) {
@@ -266,17 +270,17 @@ async function simulateAgentBehavior(files) {
 }
 
 function cleanup() {
-  log('Cleaning up test directory...');
+  log("Cleaning up test directory...");
   try {
     fs.rmSync(testDir, { recursive: true, force: true });
-    log('✅ Cleanup completed');
+    log("✅ Cleanup completed");
   } catch (error) {
     log(`❌ Cleanup failed: ${error.message}`);
   }
 }
 
 async function runTests() {
-  log('🧪 Starting File Operations Test Suite');
+  log("🧪 Starting File Operations Test Suite");
   log(`Test directory: ${testDir}`);
 
   try {
@@ -287,9 +291,9 @@ async function runTests() {
     log(`Created ${testFiles.length} test files for verification`);
 
     // Test 1: Synchronous writing (like the current system)
-    log('\n' + '='.repeat(50));
-    log('TEST 1: Synchronous File Writing');
-    log('='.repeat(50));
+    log("\n" + "=".repeat(50));
+    log("TEST 1: Synchronous File Writing");
+    log("=".repeat(50));
 
     await writeFilesSynchronously(testFiles);
     const syncResults = verifyAllFiles(testFiles);
@@ -299,9 +303,9 @@ async function runTests() {
     fs.mkdirSync(testDir, { recursive: true });
 
     // Test 2: Concurrent writing
-    log('\n' + '='.repeat(50));
-    log('TEST 2: Concurrent File Writing');
-    log('='.repeat(50));
+    log("\n" + "=".repeat(50));
+    log("TEST 2: Concurrent File Writing");
+    log("=".repeat(50));
 
     await writeFilesConcurrently(testFiles);
     const concurrentResults = verifyAllFiles(testFiles);
@@ -311,40 +315,46 @@ async function runTests() {
     fs.mkdirSync(testDir, { recursive: true });
 
     // Test 3: Agent simulation
-    log('\n' + '='.repeat(50));
-    log('TEST 3: Agent Behavior Simulation');
-    log('='.repeat(50));
+    log("\n" + "=".repeat(50));
+    log("TEST 3: Agent Behavior Simulation");
+    log("=".repeat(50));
 
     const writtenFiles = await simulateAgentBehavior(testFiles);
     const agentResults = verifyAllFiles(testFiles);
 
     // Summary
-    log('\n' + '='.repeat(60));
-    log('TEST RESULTS SUMMARY');
-    log('='.repeat(60));
+    log("\n" + "=".repeat(60));
+    log("TEST RESULTS SUMMARY");
+    log("=".repeat(60));
 
-    log(`Synchronous Test: ${syncResults.found}/${syncResults.total} files written`);
+    log(
+      `Synchronous Test: ${syncResults.found}/${syncResults.total} files written`,
+    );
     if (syncResults.missing.length > 0) {
-      log(`  Missing: ${syncResults.missing.join(', ')}`);
+      log(`  Missing: ${syncResults.missing.join(", ")}`);
     }
     if (syncResults.corrupted.length > 0) {
-      log(`  Corrupted: ${syncResults.corrupted.join(', ')}`);
+      log(`  Corrupted: ${syncResults.corrupted.join(", ")}`);
     }
 
-    log(`Concurrent Test: ${concurrentResults.found}/${concurrentResults.total} files written`);
+    log(
+      `Concurrent Test: ${concurrentResults.found}/${concurrentResults.total} files written`,
+    );
     if (concurrentResults.missing.length > 0) {
-      log(`  Missing: ${concurrentResults.missing.join(', ')}`);
+      log(`  Missing: ${concurrentResults.missing.join(", ")}`);
     }
     if (concurrentResults.corrupted.length > 0) {
-      log(`  Corrupted: ${concurrentResults.corrupted.join(', ')}`);
+      log(`  Corrupted: ${concurrentResults.corrupted.join(", ")}`);
     }
 
-    log(`Agent Simulation: ${agentResults.found}/${agentResults.total} files written`);
+    log(
+      `Agent Simulation: ${agentResults.found}/${agentResults.total} files written`,
+    );
     if (agentResults.missing.length > 0) {
-      log(`  Missing: ${agentResults.missing.join(', ')}`);
+      log(`  Missing: ${agentResults.missing.join(", ")}`);
     }
     if (agentResults.corrupted.length > 0) {
-      log(`  Corrupted: ${agentResults.corrupted.join(', ')}`);
+      log(`  Corrupted: ${agentResults.corrupted.join(", ")}`);
     }
 
     // Determine if there's an issue
@@ -357,15 +367,16 @@ async function runTests() {
       agentResults.corrupted.length === 0;
 
     if (allTestsPassed) {
-      log('\n🎉 ALL TESTS PASSED - File operations are working correctly');
-      log('The issue is likely not in the file writing system itself.');
+      log("\n🎉 ALL TESTS PASSED - File operations are working correctly");
+      log("The issue is likely not in the file writing system itself.");
     } else {
-      log('\n⚠️  SOME TESTS FAILED - There may be an issue with file operations');
-      log('This could explain why only the last file is being saved.');
+      log(
+        "\n⚠️  SOME TESTS FAILED - There may be an issue with file operations",
+      );
+      log("This could explain why only the last file is being saved.");
     }
 
     return allTestsPassed ? 0 : 1;
-
   } catch (error) {
     log(`❌ Test suite failed with error: ${error.message}`);
     log(`Stack trace: ${error.stack}`);
@@ -377,12 +388,14 @@ async function runTests() {
 
 // Run the tests if this script is executed directly
 if (require.main === module) {
-  runTests().then(exitCode => {
-    process.exit(exitCode);
-  }).catch(error => {
-    console.error('Unhandled error:', error);
-    process.exit(1);
-  });
+  runTests()
+    .then((exitCode) => {
+      process.exit(exitCode);
+    })
+    .catch((error) => {
+      console.error("Unhandled error:", error);
+      process.exit(1);
+    });
 }
 
 module.exports = { runTests, createTestFiles, simulateAgentBehavior };
