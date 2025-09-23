@@ -82,7 +82,6 @@ export type LargeLanguageModel = z.infer<typeof LargeLanguageModelSchema>;
  */
 export const RegularProviderSettingSchema = z.object({
   apiKey: SecretSchema.optional(),
-  resourceName: z.string().optional(),
 });
 
 export const VertexProviderSettingSchema = z.object({
