@@ -44,6 +44,20 @@ export type ChatSearchResult = z.infer<typeof ChatSearchResultSchema>;
 
 export const ChatSearchResultsSchema = z.array(ChatSearchResultSchema);
 
+// Zod schema for app search result objects returned by the search-app IPC
+export const AppSearchResultSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  createdAt: z.date(),
+  matchedChatTitle: z.string().nullable(),
+  matchedChatMessage: z.string().nullable(),
+});
+
+// Type derived from AppSearchResultSchema
+export type AppSearchResult = z.infer<typeof AppSearchResultSchema>;
+
+export const AppSearchResultsSchema = z.array(AppSearchResultSchema);
+
 const providers = [
   "openai",
   "anthropic",
@@ -121,7 +135,7 @@ export type RuntimeMode = z.infer<typeof RuntimeModeSchema>;
 export const RuntimeMode2Schema = z.enum(["host", "docker"]);
 export type RuntimeMode2 = z.infer<typeof RuntimeMode2Schema>;
 
-export const ChatModeSchema = z.enum(["build", "ask"]);
+export const ChatModeSchema = z.enum(["build", "ask", "agent"]);
 export type ChatMode = z.infer<typeof ChatModeSchema>;
 
 export const GitHubSecretsSchema = z.object({
@@ -212,6 +226,7 @@ export const UserSettingsSchema = z.object({
   thinkingBudget: z.enum(["low", "medium", "high"]).optional(),
   enableProLazyEditsMode: z.boolean().optional(),
   enableProSmartFilesContextMode: z.boolean().optional(),
+  enableProWebSearch: z.boolean().optional(),
   proSmartContextOption: z.enum(["balanced", "conservative"]).optional(),
   selectedTemplateId: z.string(),
   enableSupabaseWriteSqlMigration: z.boolean().optional(),

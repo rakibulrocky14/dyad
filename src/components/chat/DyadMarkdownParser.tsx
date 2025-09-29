@@ -17,6 +17,11 @@ import { CustomTagState } from "./stateTypes";
 import { DyadOutput } from "./DyadOutput";
 import { DyadProblemSummary } from "./DyadProblemSummary";
 import { IpcClient } from "@/ipc/ipc_client";
+import { DyadMcpToolCall } from "./DyadMcpToolCall";
+import { DyadMcpToolResult } from "./DyadMcpToolResult";
+import { DyadWebSearchResult } from "./DyadWebSearchResult";
+import { DyadWebSearch } from "./DyadWebSearch";
+import { DyadRead } from "./DyadRead";
 
 interface DyadMarkdownParserProps {
   content: string;
@@ -122,8 +127,13 @@ function preprocessUnclosedTags(content: string): {
     "dyad-chat-summary",
     "dyad-edit",
     "dyad-codebase-context",
+    "dyad-web-search-result",
+    "dyad-web-search",
+    "dyad-read",
     "think",
     "dyad-command",
+    "dyad-mcp-tool-call",
+    "dyad-mcp-tool-result",
   ];
 
   let processedContent = content;
@@ -189,8 +199,13 @@ function parseCustomTags(content: string): ContentPiece[] {
     "dyad-chat-summary",
     "dyad-edit",
     "dyad-codebase-context",
+    "dyad-web-search-result",
+    "dyad-web-search",
+    "dyad-read",
     "think",
     "dyad-command",
+    "dyad-mcp-tool-call",
+    "dyad-mcp-tool-result",
   ];
 
   const tagPattern = new RegExp(
@@ -276,6 +291,40 @@ function renderCustomTag(
   const { tag, attributes, content, inProgress } = tagInfo;
 
   switch (tag) {
+    case "dyad-read":
+      return (
+        <DyadRead
+          node={{
+            properties: {
+              path: attributes.path || "",
+            },
+          }}
+        >
+          {content}
+        </DyadRead>
+      );
+    case "dyad-web-search":
+      return (
+        <DyadWebSearch
+          node={{
+            properties: {},
+          }}
+        >
+          {content}
+        </DyadWebSearch>
+      );
+    case "dyad-web-search-result":
+      return (
+        <DyadWebSearchResult
+          node={{
+            properties: {
+              state: getState({ isStreaming, inProgress }),
+            },
+          }}
+        >
+          {content}
+        </DyadWebSearchResult>
+      );
     case "think":
       return (
         <DyadThink
@@ -397,6 +446,34 @@ function renderCustomTag(
         >
           {content}
         </DyadCodebaseContext>
+      );
+
+    case "dyad-mcp-tool-call":
+      return (
+        <DyadMcpToolCall
+          node={{
+            properties: {
+              serverName: attributes.server || "",
+              toolName: attributes.tool || "",
+            },
+          }}
+        >
+          {content}
+        </DyadMcpToolCall>
+      );
+
+    case "dyad-mcp-tool-result":
+      return (
+        <DyadMcpToolResult
+          node={{
+            properties: {
+              serverName: attributes.server || "",
+              toolName: attributes.tool || "",
+            },
+          }}
+        >
+          {content}
+        </DyadMcpToolResult>
       );
 
     case "dyad-output":

@@ -44,6 +44,7 @@ or to provide a custom fetch implementation for e.g. testing.
   dyadOptions: {
     enableLazyEdits?: boolean;
     enableSmartFilesContext?: boolean;
+    enableWebSearch?: boolean;
     smartContextMode?: "balanced" | "conservative";
   };
   settings: UserSettings;
@@ -137,6 +138,10 @@ export function createDyadEngine(
           if ("dyadRequestId" in parsedBody) {
             delete parsedBody.dyadRequestId;
           }
+          const dyadDisableFiles = parsedBody.dyadDisableFiles;
+          if ("dyadDisableFiles" in parsedBody) {
+            delete parsedBody.dyadDisableFiles;
+          }
 
           // Track and modify requestId with attempt number
           let modifiedRequestId = requestId;
@@ -147,13 +152,14 @@ export function createDyadEngine(
           }
 
           // Add files to the request if they exist
-          if (files?.length) {
+          if (files?.length && !dyadDisableFiles) {
             parsedBody.dyad_options = {
               files,
               enable_lazy_edits: options.dyadOptions.enableLazyEdits,
               enable_smart_files_context:
                 options.dyadOptions.enableSmartFilesContext,
               smart_context_mode: options.dyadOptions.smartContextMode,
+              enable_web_search: options.dyadOptions.enableWebSearch,
             };
           }
 
