@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAtom, useAtomValue } from "jotai";
-import { chatMessagesAtom, chatStreamCountAtom, isStreamingAtom } from "../atoms/chatAtoms";
+import { chatMessagesAtom, chatStreamCountAtom } from "../atoms/chatAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
 
 import { ChatHeader } from "./chat/ChatHeader";
@@ -26,7 +26,6 @@ export function ChatPanel({
   const [isVersionPaneOpen, setIsVersionPaneOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const streamCount = useAtomValue(chatStreamCountAtom);
-  const isStreaming = useAtomValue(isStreamingAtom);
   // Reference to store the processed prompt so we don't submit it twice
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -38,7 +37,6 @@ export function ChatPanel({
   const [scrollButtonClicks, setScrollButtonClicks] = useState(0);
   const userScrollTimeoutRef = useRef<number | null>(null);
   const lastScrollTopRef = useRef<number>(0);
-  const lastStreamCountRef = useRef<number>(0);
 
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
     messagesEndRef.current?.scrollIntoView({ behavior });
@@ -50,7 +48,9 @@ export function ChatPanel({
     if (scrollButtonClicks === 0) {
       // First click: scroll to the latest message start
       const container = messagesContainerRef.current;
-      const lastMessage = container.querySelector('[data-testid="messages-list"] > div:last-child');
+      const lastMessage = container.querySelector(
+        '[data-testid="messages-list"] > div:last-child',
+      );
 
       if (lastMessage) {
         lastMessage.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -69,7 +69,9 @@ export function ChatPanel({
   const getDistanceFromBottom = () => {
     if (!messagesContainerRef.current) return 0;
     const container = messagesContainerRef.current;
-    return container.scrollHeight - (container.scrollTop + container.clientHeight);
+    return (
+      container.scrollHeight - (container.scrollTop + container.clientHeight)
+    );
   };
 
   const isNearBottom = (threshold: number = 100) => {
@@ -80,7 +82,8 @@ export function ChatPanel({
     if (!messagesContainerRef.current) return;
 
     const container = messagesContainerRef.current;
-    const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
+    const distanceFromBottom =
+      container.scrollHeight - (container.scrollTop + container.clientHeight);
     const scrollAwayThreshold = 150; // pixels from bottom to consider "scrolled away"
 
     console.log("Distance from bottom:", distanceFromBottom);
