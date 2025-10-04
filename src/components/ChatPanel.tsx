@@ -113,8 +113,8 @@ export function ChatPanel({
   useEffect(() => {
     console.log("streamCount", streamCount);
     // Auto-scroll when streaming starts (if user is near bottom)
-    if (streamCount > 0 && !isUserScrolling) {
-      scrollToBottom("instant");
+    if (streamCount > 0 && !isUserScrolling && isNearBottom(200)) {
+      scrollToBottom("smooth");
     }
   }, [streamCount, isUserScrolling]);
 
@@ -149,16 +149,11 @@ export function ChatPanel({
 
   // Auto-scroll effect when messages change
   useEffect(() => {
-    if (
-      !isUserScrolling &&
-      messagesContainerRef.current &&
-      messages.length > 0
-    ) {
-      // Only auto-scroll if user is very close to bottom (stricter threshold)
-      if (isNearBottom(100)) {
-        requestAnimationFrame(() => {
-          scrollToBottom("instant");
-        });
+    if (messagesContainerRef.current && messages.length > 0) {
+      // Only auto-scroll if user is near bottom and not actively scrolling up
+      if (isNearBottom(150) && !isUserScrolling) {
+        // Use smooth scroll during streaming for better UX
+        scrollToBottom("smooth");
       }
     }
   }, [messages, isUserScrolling]);
@@ -183,7 +178,7 @@ export function ChatPanel({
 
               {/* Scroll to bottom button */}
               {showScrollButton && (
-                <div className="absolute bottom-6 right-6 z-10">
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
                   <Button
                     onClick={handleScrollButtonClick}
                     size="icon"
